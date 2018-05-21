@@ -26,7 +26,6 @@ class TestBase {
 
   _testEvent( eventName ) {
     let value = this._name + ':' + eventName;
-    // console.log( '_testEvent', value );
     events.push( value );
   }
 
