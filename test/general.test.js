@@ -57,7 +57,7 @@ describe( 'general', function () {
     beforeEach( function () {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.f'
         ]
       } );
@@ -73,7 +73,7 @@ describe( 'general', function () {
     it( 'should set env', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.a'
         ]
       } );
@@ -111,7 +111,7 @@ describe( 'general', function () {
     it( 'should set package', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.a'
         ]
       } );
@@ -156,7 +156,7 @@ describe( 'general', function () {
     it( 'should load dependencies correctly and init/dinit in the correct order', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.a'
         ]
       } );
@@ -289,7 +289,7 @@ describe( 'general', function () {
       function ( done ) {
 
         let core = new Core( {
-          rootModules: [
+          rootComponents: [
             './test/lib/class.node-module'
           ]
         } );
@@ -380,7 +380,7 @@ describe( 'general', function () {
     it( 'should return an error if attempting to init twice', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.a'
         ]
       } );
@@ -417,7 +417,7 @@ describe( 'general', function () {
     it( 'should return an error if attempting to get a dependency in an init method', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.err.get_init'
         ]
       } );
@@ -453,7 +453,7 @@ describe( 'general', function () {
     it( 'should return an error if attempting to get a dependency in a dinit method', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.err.get_dinit'
         ]
       } );
@@ -497,7 +497,7 @@ describe( 'general', function () {
     it( 'should return throw an error if attempting to get a dependency in any general method', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.err.get_method'
         ]
       } );
@@ -551,7 +551,7 @@ describe( 'general', function () {
     it( 'should throw an error if component uses self as dependency', function () {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.err.load-self'
         ]
       } );
@@ -574,7 +574,7 @@ describe( 'general', function () {
     it( 'should allow shared dependency chains without cycles (dependency paths need not be a tree)', function ( done ) {
 
       let core = new Core( {
-        rootModules: [
+        rootComponents: [
           './test/lib/class.cycle-a'
         ]
       } );
