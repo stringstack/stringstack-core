@@ -1,6 +1,6 @@
 # StringStack Core
 
-StringStack/core is the dependency management and injection system at the heart of the StringStack echo system of 
+StringStack/core is the dependency management and injection system at the heart of the StringStack ecosystem of 
 components. It is responsible for instantiating, initializing and d-initializing components in the correct order.
 
 This document will explain the details of implementing component interfaces as well as the semantics for how 
@@ -13,7 +13,8 @@ for a specific task. In more general terms, a class in object oriented patterns 
 as a StringStack component. In NodeJS, a module would typically have the same level of granularity as a StringStack 
 component. In fact, in StringStack, there is typically a 1-to-1 correspondence between NodeJS modules and components.
 
-There are two possible interface forms for StringStack components.
+There are two possible interface forms for StringStack components. There is a 3rd possible form, but its not a component
+in the strict sense.
 
 ### Form 1 - ES6 Class
 
@@ -79,6 +80,14 @@ constructors, so we use a `load()` method to pass in dependencies. Second, only 
 component (global singleton) since StringStack will not instantiate this object with the `new Class()` syntax. 
 Otherwise the semantics of loading components of either form are identical.
 
+### Form 3 - JSON
+
+The final form is completely different than the other two forms. It is not instantiated, initialized or d-initialized. 
+This form is for including JSON files. The files are parsed and returned as native javascript data structures. For 
+example, in any component you could call `deps.get('./package.json')` and this would return the parsed package.json file 
+for your application, assuming your current working directory is where your package.json file is located. This is a 
+great way to load config or other meta data. 
+
 ### Choosing a Form
 
 Should you use form 1 or form 2? The question is really about testing. If you want truly isolated tests, then you
@@ -136,7 +145,7 @@ in a very specific manner. The goal of this semantic is to ensure a few things:
 
 1. Your dependencies are 100% ready to be used anytime your component is initialized. That is, it ensures graceful 
 propagation of start and stop signals of your application. 
-2. Prevents cycles in the graph of your dependency graph. Cycles in dependencies creates unmanageable code.
+2. Prevents cycles in your dependency graph. Cycles in dependencies create unmanageable code. (Spaghetti code) 
 3. Promotes strong modularization of code and DRY patterns.
 4. Enables considerably easier testing of your code since dependencies are injected via constructor or load methods.
 
@@ -239,18 +248,20 @@ Finally, a component may include as many dependencies as is needed. Take for exa
 ```
 Core
 |_ A
-   |_B
-     |_D
-     |_E
-   |_C
-     |_F
-     |_G
+   |_ B
+   |  |_D
+   |  |_E
+   |_ C
+      |_F
+      |_G
 ```
 
 The instantiation, initialization and d-initialization orders are:
 
 Instantiate: A, B, D, E, C, F, G
+
 Initialize: G, F, C, E, D, B, A
+
 D-initialize: A, B, D, E, C, F, G
 
 
@@ -259,7 +270,11 @@ D-initialize: A, B, D, E, C, F, G
 Path resolution in StringStack is very similar to native NodeJS `require(path)`. The only exception is for relative
 include paths. That is, for paths that begin with `./` or `../`, StringStack will prefix the path with the current
 working directory of your process. If your current working directory is `/src/app`, then `./lib/thing` becomes 
-`/src/app/./lib/thing`, and `../lib/thing` becomes `/src/app/../lib/thing`. In both cases, the path new path is passed
+`/src/app/./lib/thing`, and `../lib/thing` becomes `/src/app/../lib/thing`. In both cases, the new path is passed
 directly to native `require(path)`. 
 
 All other paths which do not start with `./` or `../` are passed directly to native `require(path)` un-modified.
+
+There is one caveat to everything just mentioned. Any include path that ends in `.js` is also modified and the trailing
+`.js` is removed. This is because NodeJS doesn't require it and StringStack thinks there should be no difference in 
+path for components that are a single file, or components that are a directory with an index.js file in it. 
