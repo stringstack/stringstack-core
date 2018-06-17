@@ -295,29 +295,47 @@ describe( 'general', function () {
         } );
 
         let App = core.createApp();
-        let app = new App( 'test' );
+        let app = null;
 
         // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
         // correctly on subsequent init/dinit cycles.
         async.series( [
           ( done ) => {
             ncp( 'test/lib/fake-module.js', 'node_modules/fake-module.js', ( err ) => {
+
               if ( err ) {
                 return done( err );
               }
 
-              setTimeout( done, 10 );
+              setTimeout( done, 100 );
             } );
           },
-          checkInitialized( app, false ),
+          ( done ) => {
+
+            try {
+              app = new App( 'test' );
+            } catch ( e ) {
+              return done( e );
+            }
+
+            done();
+
+          },
+          ( done ) => {
+            checkInitialized( app, false )( done );
+          },
           ( done ) => {
             app.init( done );
           },
-          checkInitialized( app, true ),
+          ( done ) => {
+            checkInitialized( app, true )( done );
+          },
           ( done ) => {
             app.dinit( done );
           },
-          checkInitialized( app, false ),
+          ( done ) => {
+            checkInitialized( app, false )( done );
+          },
           ( done ) => {
 
             let actualEvents = getComponent( app, './test/lib/class.node-module' )._getEvents();
@@ -571,80 +589,79 @@ describe( 'general', function () {
 
     } );
 
-    it( 'should allow shared dependency chains without cycles (dependency paths need not be a tree)', function ( done ) {
+    it( 'should allow shared dependency chains without cycles (dependency paths need not be a tree)',
+      function ( done ) {
 
-      let core = new Core( {
-        rootComponents: [
-          './test/lib/class.cycle-a'
-        ]
-      } );
+        let core = new Core( {
+          rootComponents: [
+            './test/lib/class.cycle-a'
+          ]
+        } );
 
-      let App = core.createApp();
-      let app = new App( 'test' );
+        let App = core.createApp();
+        let app = new App( 'test' );
 
-      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
-      // correctly on subsequent init/dinit cycles.
-      async.series( [
-        checkInitialized( app, false ),
-        ( done ) => {
-          app.init( done );
-        },
-        checkInitialized( app, true ),
-        ( done ) => {
-          app.dinit( done );
-        },
-        checkInitialized( app, false ),
-        ( done ) => {
+        // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+        // correctly on subsequent init/dinit cycles.
+        async.series( [
+          checkInitialized( app, false ),
+          ( done ) => {
+            app.init( done );
+          },
+          checkInitialized( app, true ),
+          ( done ) => {
+            app.dinit( done );
+          },
+          checkInitialized( app, false ),
+          ( done ) => {
 
-          let actualEvents = getComponent( app, './test/lib/class.cycle-a' )._getEvents();
-          let expectedEvents = [
-            "TestCycleA:instantiate",
-            "TestCycleB:instantiate",
-            "TestCycleC:instantiate",
-            "TestCycleD:instantiate",
-            "TestCycleE:instantiate",
-            "TestCycleF:instantiate",
-            "TestCycleI:instantiate",
-            "TestCycleG:instantiate",
-            "TestCycleH:instantiate",
-            "TestCycleI:init",
-            "TestCycleF:init",
-            "TestCycleE:init",
-            "TestCycleD:init",
-            "TestCycleC:init",
-            "TestCycleH:init",
-            "TestCycleG:init",
-            "TestCycleB:init",
-            "TestCycleA:init",
-            "TestCycleA:dinit",
-            "TestCycleB:dinit",
-            "TestCycleG:dinit",
-            "TestCycleH:dinit",
-            "TestCycleC:dinit",
-            "TestCycleD:dinit",
-            "TestCycleE:dinit",
-            "TestCycleF:dinit",
-            "TestCycleI:dinit"
-          ];
+            let actualEvents = getComponent( app, './test/lib/class.cycle-a' )._getEvents();
+            let expectedEvents = [
+              "TestCycleA:instantiate",
+              "TestCycleB:instantiate",
+              "TestCycleC:instantiate",
+              "TestCycleD:instantiate",
+              "TestCycleE:instantiate",
+              "TestCycleF:instantiate",
+              "TestCycleI:instantiate",
+              "TestCycleG:instantiate",
+              "TestCycleH:instantiate",
+              "TestCycleI:init",
+              "TestCycleF:init",
+              "TestCycleE:init",
+              "TestCycleD:init",
+              "TestCycleC:init",
+              "TestCycleH:init",
+              "TestCycleG:init",
+              "TestCycleB:init",
+              "TestCycleA:init",
+              "TestCycleA:dinit",
+              "TestCycleB:dinit",
+              "TestCycleG:dinit",
+              "TestCycleH:dinit",
+              "TestCycleC:dinit",
+              "TestCycleD:dinit",
+              "TestCycleE:dinit",
+              "TestCycleF:dinit",
+              "TestCycleI:dinit"
+            ];
 
-          // console.log( 'actualEvents', JSON.stringify( actualEvents, null, 4 ) );
+            try {
 
-          try {
+              assert.deepStrictEqual( actualEvents,
+                expectedEvents,
+                'log of instantiation, initialization and d-initialization is not correct' );
 
-            assert.deepStrictEqual( actualEvents,
-              expectedEvents,
-              'log of instantiation, initialization and d-initialization is not correct' );
+            } catch ( e ) {
+              return done( e );
+            }
 
-          } catch ( e ) {
-            return done( e );
+            done();
+
           }
+        ], done );
 
-          done();
-
-        }
-      ], done );
-
-    } );
+      } );
 
   } );
 
