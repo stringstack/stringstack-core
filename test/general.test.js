@@ -26,10 +26,11 @@ let checkInitialized = function ( app, initialized ) {
 
       } );
 
-      done();
     } catch ( e ) {
-      done( e );
+      return done( e );
     }
+
+    setImmediate( done );
 
   };
 };
@@ -477,7 +478,7 @@ describe( 'general', function () {
     } );
 
 
-    it( 'should all config to pass to Core()', function ( done ) {
+    it( 'should allow config to pass to Core()', function ( done ) {
 
       let core = new Core( {
         rootComponents: [
@@ -553,6 +554,66 @@ describe( 'general', function () {
 
     } );
 
+    it( 'should allow multiple root components', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/class.root-a',
+          './test/lib/class.root-c'
+        ]
+      } );
+
+      let app = new App( 'test' );
+
+      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        checkInitialized( app, false ),
+        ( done ) => {
+          app.init( done );
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+          app.dinit( done );
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+
+          let actualEvents = getComponentManually( app, './test/lib/class.root-a' )._getEvents();
+
+          let expectedEvents = [
+            "TestRootA:instantiate",
+            "TestRootB:instantiate",
+            "TestRootC:instantiate",
+            "TestRootD:instantiate",
+            "TestRootD:init",
+            "TestRootC:init",
+            "TestRootB:init",
+            "TestRootA:init",
+            "TestRootA:dinit",
+            "TestRootB:dinit",
+            "TestRootC:dinit",
+            "TestRootD:dinit"
+          ];
+
+          try {
+
+            assert.deepStrictEqual( actualEvents, expectedEvents,
+              'log of instantiation, initialization and d-initialization is not correct' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
+
     it( 'should return an error if attempting to init twice', function ( done ) {
 
       let core = new Core();
@@ -580,11 +641,11 @@ describe( 'general', function () {
             'already initialized',
             'error message does not match' );
 
-          done();
-
         } catch ( e ) {
-          done( e );
+          return done( e );
         }
+
+        done();
 
       } );
 
@@ -616,11 +677,11 @@ describe( 'general', function () {
             'you must access your dependencies in your constructor only',
             'error message does not match' );
 
-          done();
-
         } catch ( e ) {
-          done( e );
+          return done( e );
         }
+
+        done();
 
       } );
 
@@ -660,11 +721,11 @@ describe( 'general', function () {
             'you must access your dependencies in your constructor only',
             'error message does not match' );
 
-          done();
-
         } catch ( e ) {
-          done( e );
+          return done( e );
         }
+
+        done();
 
       } );
 
@@ -694,10 +755,11 @@ describe( 'general', function () {
 
           try {
             getComponentManually( app, './test/lib/class.err.get_method' ).method( done );
-            done();
           } catch ( e ) {
-            done( e );
+            return done( e );
           }
+
+          done();
 
         },
         ( done ) => {
@@ -714,11 +776,11 @@ describe( 'general', function () {
             'you must access your dependencies in your constructor only',
             'error message does not match' );
 
-          done();
-
         } catch ( e ) {
-          done( e );
+          return done( e );
         }
+
+        done();
 
       } );
 
