@@ -1,7 +1,7 @@
 {
   "name": "@stringstack/core",
   "description": "StringStack Core",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/BlueRival/stringstack-core.git"
@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "mocha": "5.1.1",
+    "nconf": "0.10.0",
     "ncp": "2.0.0"
   },
   "keywords": [

@@ -1,10 +1,10 @@
 'use strict';
 
-const async = require( 'async' );
 const assert = require( 'assert' );
-const Path = require( 'path' );
+const async = require( 'async' );
 const Core = require( '../index' );
 const ncp = require( 'ncp' ).ncp;
+const Path = require( 'path' );
 
 // should be used in all tests after init/dinit methods to ensure all modules are initialized/dinitialized properly
 let checkInitialized = function ( app, initialized ) {
@@ -34,7 +34,14 @@ let checkInitialized = function ( app, initialized ) {
   };
 };
 
-let getComponent = function ( app, targetPath ) {
+/**
+ * Will not trigger any access logs and break tests checking access counts.
+ *
+ * @param app
+ * @param targetPath
+ * @returns {*}
+ */
+let getComponentManually = function ( app, targetPath ) {
 
   targetPath = app._loader._normalizePath( targetPath );
 
@@ -46,7 +53,15 @@ let getComponent = function ( app, targetPath ) {
 
 };
 
-let getComponentReal = function ( app, targetPath ) {
+/**
+ *
+ * Will trigger access logs and will break tests checking access counts.
+ *
+ * @param app
+ * @param targetPath
+ * @returns {*}
+ */
+let getComponentNative = function ( app, targetPath ) {
   return app._loader.get( 'app', targetPath );
 };
 
@@ -56,29 +71,29 @@ describe( 'general', function () {
 
     beforeEach( function () {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.f'
         ]
       } );
-
-      let App = core.createApp();
       let app = new App( 'test' );
 
       // reset event log
-      getComponent( app, './test/lib/class.f' )._resetEvents();
+      getComponentManually( app, './test/lib/class.f' )._resetEvents();
 
     } );
 
     it( 'should set env', function ( done ) {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.a'
         ]
       } );
-
-      let App = core.createApp();
       let app = new App( 'test' );
 
       async.series( [
@@ -91,7 +106,7 @@ describe( 'general', function () {
 
           try {
 
-            assert.equal( getComponent( app, 'env' ), 'test', 'environment should be test' );
+            assert.equal( getComponentManually( app, 'env' ), 'test', 'environment should be test' );
 
           } catch ( e ) {
             return done( e );
@@ -110,13 +125,13 @@ describe( 'general', function () {
 
     it( 'should set package', function ( done ) {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.a'
         ]
       } );
-
-      let App = core.createApp();
       let app = new App( 'test' );
 
       async.series( [
@@ -129,7 +144,7 @@ describe( 'general', function () {
 
           try {
 
-            let actualPackage = getComponentReal( app, './package.json' );
+            let actualPackage = getComponentNative( app, './package.json' );
 
             // clone the expected package
             let expectedPackage = JSON.parse( JSON.stringify( require( Path.join( process.cwd(), 'package.json' ) ) ) );
@@ -153,15 +168,82 @@ describe( 'general', function () {
 
     } );
 
-    it( 'should load dependencies correctly and init/dinit in the correct order', function ( done ) {
+    it( 'should set config', function ( done ) {
 
-      let core = new Core( {
+      let testConfig = {
+        testModule: {
+          test: 'value'
+        }
+      };
+
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.a'
         ]
       } );
+      let app = new App( 'test' );
 
-      let App = core.createApp();
+      async.series( [
+        ( done ) => {
+
+          try {
+
+            let config = getComponentManually( app, 'config' );
+
+            config.defaults( testConfig );
+
+            assert( config, 'config should be truthy' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+
+        },
+        ( done ) => {
+          app.init( done );
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+
+          try {
+
+            let config = getComponentNative( app, 'config' );
+
+            assert( config, 'config should be truthy' );
+
+            let testValue = config.get( 'testModule' );
+
+            assert.deepEqual( testValue, testConfig.testModule );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        },
+        ( done ) => {
+          app.dinit( done );
+        },
+        checkInitialized( app, false )
+      ], done );
+
+    } );
+
+    it( 'should load dependencies correctly and init/dinit in the correct order', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/class.a'
+        ]
+      } );
       let app = new App( 'test' );
 
       // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
@@ -194,7 +276,7 @@ describe( 'general', function () {
         checkInitialized( app, false ),
         ( done ) => {
 
-          let actualEvents = getComponent( app, './test/lib/class.f' )._getEvents();
+          let actualEvents = getComponentManually( app, './test/lib/class.f' )._getEvents();
           let expectedEvents = [
             "TestA:instantiate",
             "TestB:instantiate",
@@ -285,117 +367,117 @@ describe( 'general', function () {
 
     } );
 
-    it( 'should load dependencies correctly including node_modules and init/dinit in the correct order',
-      function ( done ) {
+    it( 'should load dependencies correctly including node_modules in the correct order', function ( done ) {
 
-        let core = new Core( {
-          rootComponents: [
-            './test/lib/class.node-module'
-          ]
-        } );
+      let core = new Core();
 
-        let App = core.createApp();
-        let app = null;
-
-        // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
-        // correctly on subsequent init/dinit cycles.
-        async.series( [
-          ( done ) => {
-            ncp( 'test/lib/fake-module.js', 'node_modules/fake-module.js', ( err ) => {
-
-              if ( err ) {
-                return done( err );
-              }
-
-              setTimeout( done, 100 );
-            } );
-          },
-          ( done ) => {
-
-            try {
-              app = new App( 'test' );
-            } catch ( e ) {
-              return done( e );
-            }
-
-            done();
-
-          },
-          ( done ) => {
-            checkInitialized( app, false )( done );
-          },
-          ( done ) => {
-            app.init( done );
-          },
-          ( done ) => {
-            checkInitialized( app, true )( done );
-          },
-          ( done ) => {
-            app.dinit( done );
-          },
-          ( done ) => {
-            checkInitialized( app, false )( done );
-          },
-          ( done ) => {
-
-            let actualEvents = getComponent( app, './test/lib/class.node-module' )._getEvents();
-            let expectedEvents = [
-              "TestNodeModule:instantiate",
-              "TestFakeModule:instantiate",
-              "TestA:instantiate",
-              "TestB:instantiate",
-              "TestDatabase:instantiate",
-              "TestConfig:instantiate",
-              "TestC:instantiate",
-              "TestD:instantiate",
-              "TestE:instantiate",
-              "StaticH:instantiate",
-              "TestF:instantiate",
-              "TestG:instantiate",
-              "TestConfig:init",
-              "TestDatabase:init",
-              "TestG:init",
-              "TestF:init",
-              "StaticH:init",
-              "TestE:init",
-              "TestD:init",
-              "TestC:init",
-              "TestB:init",
-              "TestA:init",
-              "TestFakeModule:init",
-              "TestNodeModule:init",
-              "TestNodeModule:dinit",
-              "TestFakeModule:dinit",
-              "TestA:dinit",
-              "TestB:dinit",
-              "TestC:dinit",
-              "TestD:dinit",
-              "TestE:dinit",
-              "StaticH:dinit",
-              "TestF:dinit",
-              "TestG:dinit",
-              "TestDatabase:dinit",
-              "TestConfig:dinit"
-            ];
-
-            try {
-
-              assert.deepStrictEqual( actualEvents,
-                expectedEvents,
-                'log of instantiation, initialization and d-initialization is not correct' );
-
-            } catch ( e ) {
-              return done( e );
-            }
-
-            done();
-
-          }
-        ], done );
-
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/class.node-module'
+        ]
       } );
+      let app = null;
 
-    it( 'should return an error if attempting to init twice', function ( done ) {
+      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        ( done ) => {
+          ncp( 'test/lib/fake-module.js', 'node_modules/fake-module.js', ( err ) => {
+
+            if ( err ) {
+              return done( err );
+            }
+
+            setTimeout( done, 10 );
+          } );
+        },
+        ( done ) => {
+
+          try {
+            app = new App( 'test' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        },
+        ( done ) => {
+          checkInitialized( app, false )( done );
+        },
+        ( done ) => {
+          app.init( done );
+        },
+        ( done ) => {
+          checkInitialized( app, true )( done );
+        },
+        ( done ) => {
+          app.dinit( done );
+        },
+        ( done ) => {
+          checkInitialized( app, false )( done );
+        },
+        ( done ) => {
+
+          let actualEvents = getComponentManually( app, './test/lib/class.node-module' )._getEvents();
+          let expectedEvents = [
+            "TestNodeModule:instantiate",
+            "TestFakeModule:instantiate",
+            "TestA:instantiate",
+            "TestB:instantiate",
+            "TestDatabase:instantiate",
+            "TestConfig:instantiate",
+            "TestC:instantiate",
+            "TestD:instantiate",
+            "TestE:instantiate",
+            "StaticH:instantiate",
+            "TestF:instantiate",
+            "TestG:instantiate",
+            "TestConfig:init",
+            "TestDatabase:init",
+            "TestG:init",
+            "TestF:init",
+            "StaticH:init",
+            "TestE:init",
+            "TestD:init",
+            "TestC:init",
+            "TestB:init",
+            "TestA:init",
+            "TestFakeModule:init",
+            "TestNodeModule:init",
+            "TestNodeModule:dinit",
+            "TestFakeModule:dinit",
+            "TestA:dinit",
+            "TestB:dinit",
+            "TestC:dinit",
+            "TestD:dinit",
+            "TestE:dinit",
+            "StaticH:dinit",
+            "TestF:dinit",
+            "TestG:dinit",
+            "TestDatabase:dinit",
+            "TestConfig:dinit"
+          ];
+
+          try {
+
+            assert.deepStrictEqual( actualEvents,
+              expectedEvents,
+              'log of instantiation, initialization and d-initialization is not correct' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
+
+
+    it( 'should all config to pass to Core()', function ( done ) {
 
       let core = new Core( {
         rootComponents: [
@@ -404,6 +486,82 @@ describe( 'general', function () {
       } );
 
       let App = core.createApp();
+      let app = new App( 'test' );
+
+      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        checkInitialized( app, false ),
+        ( done ) => {
+          app.init( done );
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+          app.dinit( done );
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+
+          let actualEvents = getComponentManually( app, './test/lib/class.f' )._getEvents();
+          let expectedEvents = [
+            "TestA:instantiate",
+            "TestB:instantiate",
+            "TestDatabase:instantiate",
+            "TestConfig:instantiate",
+            "TestC:instantiate",
+            "TestD:instantiate",
+            "TestE:instantiate",
+            "StaticH:instantiate",
+            "TestF:instantiate",
+            "TestG:instantiate",
+            "TestConfig:init",
+            "TestDatabase:init",
+            "TestG:init",
+            "TestF:init",
+            "StaticH:init",
+            "TestE:init",
+            "TestD:init",
+            "TestC:init",
+            "TestB:init",
+            "TestA:init",
+            "TestA:dinit",
+            "TestB:dinit",
+            "TestC:dinit",
+            "TestD:dinit",
+            "TestE:dinit",
+            "StaticH:dinit",
+            "TestF:dinit",
+            "TestG:dinit",
+            "TestDatabase:dinit",
+            "TestConfig:dinit"
+          ];
+
+          try {
+
+            assert.deepStrictEqual( actualEvents,
+              expectedEvents,
+              'log of instantiation, initialization and d-initialization is not correct' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
+
+    it( 'should return an error if attempting to init twice', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/class.a'
+        ]
+      } );
       let app = new App( 'test' );
 
       async.series( [
@@ -434,13 +592,13 @@ describe( 'general', function () {
 
     it( 'should return an error if attempting to get a dependency in an init method', function ( done ) {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.err.get_init'
         ]
       } );
-
-      let App = core.createApp();
       let app = new App( 'test' );
 
       async.series( [
@@ -470,13 +628,13 @@ describe( 'general', function () {
 
     it( 'should return an error if attempting to get a dependency in a dinit method', function ( done ) {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.err.get_dinit'
         ]
       } );
-
-      let App = core.createApp();
       let app = new App( 'test' );
 
       let initGood = false;
@@ -514,13 +672,13 @@ describe( 'general', function () {
 
     it( 'should return throw an error if attempting to get a dependency in any general method', function ( done ) {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.err.get_method'
         ]
       } );
-
-      let App = core.createApp();
       let app = new App( 'test' );
 
       let initGood = false;
@@ -535,7 +693,7 @@ describe( 'general', function () {
           initGood = true;
 
           try {
-            getComponent( app, './test/lib/class.err.get_method' ).method( done );
+            getComponentManually( app, './test/lib/class.err.get_method' ).method( done );
             done();
           } catch ( e ) {
             done( e );
@@ -568,13 +726,13 @@ describe( 'general', function () {
 
     it( 'should throw an error if component uses self as dependency', function () {
 
-      let core = new Core( {
+      let core = new Core();
+
+      let App = core.createApp( {
         rootComponents: [
           './test/lib/class.err.load-self'
         ]
       } );
-
-      let App = core.createApp();
 
       let exception = null;
       try {
@@ -592,13 +750,13 @@ describe( 'general', function () {
     it( 'should allow shared dependency chains without cycles (dependency paths need not be a tree)',
       function ( done ) {
 
-        let core = new Core( {
+        let core = new Core();
+
+        let App = core.createApp( {
           rootComponents: [
             './test/lib/class.cycle-a'
           ]
         } );
-
-        let App = core.createApp();
         let app = new App( 'test' );
 
         // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
@@ -615,7 +773,7 @@ describe( 'general', function () {
           checkInitialized( app, false ),
           ( done ) => {
 
-            let actualEvents = getComponent( app, './test/lib/class.cycle-a' )._getEvents();
+            let actualEvents = getComponentManually( app, './test/lib/class.cycle-a' )._getEvents();
             let expectedEvents = [
               "TestCycleA:instantiate",
               "TestCycleB:instantiate",

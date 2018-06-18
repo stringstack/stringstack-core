@@ -160,14 +160,14 @@ would do so like this.
 
 const Core = require('@stringstack/core');
 
-let core = new Core({
-    rootComponents: [
-        './lib/some-component-a',
-        './lib/some-component-b',
-    ]
-});
+let core = new Core();
 
-const App = core.createApp();
+const App = core.createApp( {
+  rootComponents: [
+     './lib/some-component-a',
+     './lib/some-component-b',
+  ]
+} );
 
 let app = new App('production');
 
@@ -277,4 +277,90 @@ All other paths which do not start with `./` or `../` are passed directly to nat
 
 There is one caveat to everything just mentioned. Any include path that ends in `.js` is also modified and the trailing
 `.js` is removed. This is because NodeJS doesn't require it and StringStack thinks there should be no difference in 
-path for components that are a single file, or components that are a directory with an index.js file in it. 
+path for components that are a single file, or components that are a directory with an index.js file in it.
+
+## Configuration
+
+StringStack/core a built in configuration space. It is implemented with nconf (https://www.npmjs.com/package/nconf). 
+The current version of nconf being used is v0.10.0. 
+
+You can access the nconf instance with the dependency container. 
+
+```javascript
+  let config = deps.get( 'config' );
+```
+
+The nconf instance is a raw instance of nconf's provider class. We create an instance of nconf so that we don't create
+a global, configuration singleton. Essentially we create the nconf instance like this.
+
+```javascript
+  let config = new require( 'nconf' ).Provider;
+```
+
+That is all that is done. It is up to you to initialize the instance. Keep in mind that nconf is is geared more toward 
+synchronous loading of config, so you will need to trigger the loading and parsing of config resources in a constructor
+of one of your custom components. It is recommended that you create a config setup component that is loaded as one of the
+root components passed to ```rootComponents``` field passed to ```createApp()```. A config setup component would 
+do something like this.
+
+```javascript
+
+  const request = require( 'request' );
+  
+  class SetupConfig {
+    
+    constructor(deps) {
+      
+      this._config = deps.get( 'config' );
+        
+      // This is where you would do the synchronous config loads. If your configs are local, loading synchronously in 
+      // the constructor will make that config available immediately to all components in your application.
+      //
+      // You should consult documentation for nconf v0.10.0 for reference https://www.npmjs.com/package/nconf
+      this._config
+        .argv()
+        .env()
+        .file({ file: 'path/to/config.json' });
+      
+    }
+    
+    init(done) {
+      
+      // If you need to load config asynchronously, do it in the init method. That way all dependencies should wait
+      // until init is called to pull their values. 
+      request.get( 'http://some.config.server.com/app.json', (err, response, body) => {
+        
+        if (err) {
+          return done(err);
+        }
+        
+        body = JSON.parse( body );
+        
+        // You should consult documentation for nconf v0.10.0 for reference https://www.npmjs.com/package/nconf
+        this._config.set('some.path', body);
+        
+        done();
+        
+      } );
+      
+    }
+    
+    // ...
+    
+  }
+  
+  module.exports = SetupConfig;
+
+```
+
+### Config for 3rd Party Components
+
+One of the values of StringStack is the ability to include 3rd party libraries into your stack. Many of these 3rd party 
+libraries, such as StringStack/express, will require config. Each of these components will specify where they will look
+for config within the nconf component. The 3rd party component will also specify when the component expects config to be
+available. For example, it may require config to be available at init time. This means you can provide config at load
+or init time, since load time is before init. Another component may require its config to be available at load time so
+that it may access config in its constructor or load method. However, we have yet to encounter a situation where load
+time config requirements is the result of anything other than bad programming. If the developer of your 3rd party 
+component requires load time config and has not made a solid case for why they can't wait until init time, you should
+consider choosing a different 3rd party component.
