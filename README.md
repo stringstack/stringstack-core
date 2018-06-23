@@ -92,7 +92,7 @@ great way to load config or other meta data.
 
 Should you use form 1 or form 2? The question is really about testing. If you want truly isolated tests, then you
 should use form 1. With form 1 you can have multiple tests that each pass in different dependency variations to your
-component. You can then test your component under each scenario. With form 2, although StringStack will recall `load()`
+component. You can then test your component under each scenario. With form 2, although StringStack will call `load()`
 it is up to your code to ensure consistency between tests, which means your tests now need to also test for consistency.
 Internal StringStack engineers only use form 1 for StringStack components and for projects that utilize StringStack. 
 
@@ -118,7 +118,7 @@ const SomeDatabaseDriver = require('somedatabase');
 class SomeDatabaseComponent {
   
   constructor(deps) {
-    this._config = deps.get('config').database;
+    this._config = deps.get('config').get('database'); // .get('config') returns the instance of nconf
     this._handle = new SomeDatabaseDriver(this._config);
   }
   
@@ -157,26 +157,44 @@ When StringStack core is instantiated, you pass in the root components. These ar
 would do so like this.
 
 ```javascript
-
+ 
 const Core = require('@stringstack/core');
-
+ 
 let core = new Core();
-
+ 
 const App = core.createApp( {
   rootComponents: [
      './lib/some-component-a',
      './lib/some-component-b',
   ]
 } );
-
+ 
 let app = new App('production');
-
-app.init();
-
-onSomeProcessShutdownSignal( () => {
-  app.dinit();
+ 
+app.init( (err) => {
+  
+  if (err) {
+    console.error('something went wrong', e);
+  } else {
+    console.log('app is up and running!');
+  }
+  
 });
-
+ 
+// Its up to you to manage these signals. See the section on Daemonix below for a recommendation on how to properly 
+// handle shutdown signals, as well as some other nifty process management features.
+onSomeProcessShutdownSignal( () => {
+  
+  app.dinit( (err) => {
+    if (err) {
+        console.error('something went wrong, the app may not have shutdown correctly', e);
+      } else {
+        console.log('the node process should exit after this statement prints!');
+      }
+  });
+  
+});
+ 
 ```
 
 Here we are passing in two root components. The order matters. StringStack instantiates components in depth-first order.
@@ -290,8 +308,8 @@ You can access the nconf instance with the dependency container.
   let config = deps.get( 'config' );
 ```
 
-The nconf instance is a raw instance of nconf's provider class. We create an instance of nconf so that we don't create
-a global, configuration singleton. Essentially we create the nconf instance like this.
+The nconf instance is a raw instance of nconf's provider class. We create an instance of nconf so that we don't use a 
+global, configuration singleton. Essentially we create the nconf instance like this.
 
 ```javascript
   let config = new require( 'nconf' ).Provider;
@@ -299,8 +317,8 @@ a global, configuration singleton. Essentially we create the nconf instance like
 
 That is all that is done. It is up to you to initialize the instance. Keep in mind that nconf is is geared more toward 
 synchronous loading of config, so you will need to trigger the loading and parsing of config resources in a constructor
-of one of your custom components. It is recommended that you create a config setup component that is loaded as one of the
-root components passed to ```rootComponents``` field passed to ```createApp()```. A config setup component would 
+of one of your custom components. It is recommended that you create a config setup component that is loaded as one of 
+the root components passed to ```rootComponents``` field passed to ```createApp()```. A config setup component would 
 do something like this.
 
 ```javascript
@@ -353,14 +371,45 @@ do something like this.
 
 ```
 
+# Daemonix for Linux Signal Management
+
+If you are running your application on a Linux/Mac/BSD/Unix/etc based system, including containers or app engines, we 
+recommend using Daemonix for handling OS process signals and properly daemonizing your NodeJS application. Daemonix also
+has built in cluster management. It can be configured to automatically select the correct cluster size based on number
+of CPU cores, or you can manually specify the number of cores to use. 
+
+Check it out https://www.npmjs.com/package/daemonix
+
+With Daemonix you can run your application like this.
+
+```javascript
+ 
+const Core = require('@stringstack/core');
+ 
+let core = new Core();
+ 
+const App = core.createApp( {
+  rootComponents: [
+     './lib/some-component-a',
+     './lib/some-component-b',
+  ]
+} );
+ 
+let daemonix = require( 'daemonix' );
+ 
+daemonix( { app: App } );
+ 
+```
+
 ### Config for 3rd Party Components
 
 One of the values of StringStack is the ability to include 3rd party libraries into your stack. Many of these 3rd party 
 libraries, such as StringStack/express, will require config. Each of these components will specify where they will look
 for config within the nconf component. The 3rd party component will also specify when the component expects config to be
 available. For example, it may require config to be available at init time. This means you can provide config at load
-or init time, since load time is before init. Another component may require its config to be available at load time so
-that it may access config in its constructor or load method. However, we have yet to encounter a situation where load
-time config requirements is the result of anything other than bad programming. If the developer of your 3rd party 
-component requires load time config and has not made a solid case for why they can't wait until init time, you should
-consider choosing a different 3rd party component.
+or init time, since load time is before init. 
+
+Another component may require its config to be available at load time so that it may access config in its constructor or 
+load method. However, we have yet to encounter a situation where load time config requirements is the result of anything 
+other than bad programming. If the developer of your 3rd party component requires load time config and has not made a 
+solid case for why they can't wait until init time, you should consider choosing a different 3rd party component.
