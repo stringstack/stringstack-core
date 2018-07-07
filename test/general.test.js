@@ -477,83 +477,6 @@ describe( 'general', function () {
 
     } );
 
-
-    it( 'should allow config to pass to Core()', function ( done ) {
-
-      let core = new Core( {
-        rootComponents: [
-          './test/lib/class.a'
-        ]
-      } );
-
-      let App = core.createApp();
-      let app = new App( 'test' );
-
-      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
-      // correctly on subsequent init/dinit cycles.
-      async.series( [
-        checkInitialized( app, false ),
-        ( done ) => {
-          app.init( done );
-        },
-        checkInitialized( app, true ),
-        ( done ) => {
-          app.dinit( done );
-        },
-        checkInitialized( app, false ),
-        ( done ) => {
-
-          let actualEvents = getComponentManually( app, './test/lib/class.f' )._getEvents();
-          let expectedEvents = [
-            "TestA:instantiate",
-            "TestB:instantiate",
-            "TestDatabase:instantiate",
-            "TestConfig:instantiate",
-            "TestC:instantiate",
-            "TestD:instantiate",
-            "TestE:instantiate",
-            "StaticH:instantiate",
-            "TestF:instantiate",
-            "TestG:instantiate",
-            "TestConfig:init",
-            "TestDatabase:init",
-            "TestG:init",
-            "TestF:init",
-            "StaticH:init",
-            "TestE:init",
-            "TestD:init",
-            "TestC:init",
-            "TestB:init",
-            "TestA:init",
-            "TestA:dinit",
-            "TestB:dinit",
-            "TestC:dinit",
-            "TestD:dinit",
-            "TestE:dinit",
-            "StaticH:dinit",
-            "TestF:dinit",
-            "TestG:dinit",
-            "TestDatabase:dinit",
-            "TestConfig:dinit"
-          ];
-
-          try {
-
-            assert.deepStrictEqual( actualEvents,
-              expectedEvents,
-              'log of instantiation, initialization and d-initialization is not correct' );
-
-          } catch ( e ) {
-            return done( e );
-          }
-
-          done();
-
-        }
-      ], done );
-
-    } );
-
     it( 'should allow multiple root components', function ( done ) {
 
       let core = new Core();
@@ -882,6 +805,217 @@ describe( 'general', function () {
         ], done );
 
       } );
+
+    it( 'should handle log events', function ( done ) {
+
+      let logHistory = [];
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/class.log.a'
+        ],
+        log: ( level, path, message, meta ) => {
+          logHistory.push( [ level, path, message, meta ] );
+        }
+      } );
+      let app = new App( 'test' );
+
+      async.series( [
+        ( done ) => {
+          app.init( done );
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+          app.dinit( done );
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+
+          try {
+
+            // console.log( 'logHistory', JSON.stringify( logHistory, null, 4 ) );
+
+            let dir = process.cwd();
+
+            assert.deepStrictEqual( logHistory, [
+              [
+                "info",
+                "loader",
+                "instantiating class component: " + dir + "/test/lib/class.log.a",
+                undefined
+              ],
+              [
+                "info",
+                dir + "/test/lib/class.log.a",
+                "TestLogA constructor",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "info",
+                "loader",
+                "instantiating class component: " + dir + "/test/lib/class.log.b",
+                undefined
+              ],
+              [
+                "info",
+                dir + "/test/lib/class.log.b",
+                "TestLogB constructor",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "verbose",
+                dir + "/test/lib/class.log.b",
+                "TestLogB constructor",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "notice",
+                "app",
+                "instantiated",
+                undefined
+              ],
+              [
+                "notice",
+                "loader",
+                "begin initializing components",
+                undefined
+              ],
+              [
+                "debug",
+                dir + "/test/lib/class.log.b",
+                "TestLogB init",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "info",
+                "loader",
+                "initialized component " + dir + "/test/lib/class.log.b",
+                undefined
+              ],
+              [
+                "debug",
+                dir + "/test/lib/class.log.a",
+                "TestLogA init",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "warning",
+                dir + "/test/lib/class.log.a",
+                "TestLogA init warn",
+                undefined
+              ],
+              [
+                "warning",
+                dir + "/test/lib/class.log.a",
+                "TestLogA init warning",
+                undefined
+              ],
+              [
+                "info",
+                "loader",
+                "initialized component " + dir + "/test/lib/class.log.a",
+                undefined
+              ],
+              [
+                "info",
+                "loader",
+                "initialized component config",
+                undefined
+              ],
+              [
+                "info",
+                "loader",
+                "initialized component env",
+                undefined
+              ],
+              [
+                "notice",
+                "loader",
+                "finished initializing components",
+                undefined
+              ],
+              [
+                "notice",
+                "loader",
+                "begin d-initializing components",
+                undefined
+              ],
+              [
+                "info",
+                "loader",
+                "d-initialized component env",
+                undefined
+              ],
+              [
+                "info",
+                "loader",
+                "d-initialized component config",
+                undefined
+              ],
+              [
+                "debug",
+                dir + "/test/lib/class.log.a",
+                "TestLogA dinit",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "info",
+                "loader",
+                "d-initialized component " + dir + "/test/lib/class.log.a",
+                undefined
+              ],
+              [
+                "debug",
+                dir + "/test/lib/class.log.b",
+                "TestLogB dinit",
+                {
+                  "meta": "data"
+                }
+              ],
+              [
+                "info",
+                dir + "/test/lib/class.log.b",
+                "TestLogB information",
+                undefined
+              ],
+              [
+                "info",
+                "loader",
+                "d-initialized component " + dir + "/test/lib/class.log.b",
+                undefined
+              ],
+              [
+                "notice",
+                "loader",
+                "finished d-initializing components",
+                undefined
+              ]
+            ], 'should pass log events to logger' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
 
   } );
 

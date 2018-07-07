@@ -1,7 +1,7 @@
 {
   "name": "@stringstack/core",
   "description": "StringStack Core",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/BlueRival/stringstack-core.git"

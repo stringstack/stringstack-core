@@ -371,6 +371,118 @@ do something like this.
 
 ```
 
+# Logging
+
+StringStack/core provides a logging facility that you can use to tap into your favorite logging tool. Simply pass a 
+logger function to the config for createApp() and get all the log writes from all components. Do so like this.
+
+```javascript
+ 
+const Core = require('@stringstack/core');
+const Winston = require( 'winston' );
+
+// log to stdout/stderr
+let winston = new (Winston.Logger)( {
+  transports: [
+    new Winston.transports.Console( {
+      timestamp: true,
+      colorize: true,
+      level: process.env.NODE_LOG_LEVEL || 'info' // default to info, unless environment overrides
+    } )
+  ]
+} );
+
+let winstonLogger = function ( level, path, message, meta ) {
+                 
+  // pass the event to your favorite logger, such as https://www.npmjs.com/package/winston OR, just console it.
+  
+  if ( meta instanceof Error ) {
+   meta = ` ${message.message}: ${message.stack}`;
+  }
+  
+  winston.log( level, `[${process.pid}] ${path}: ${message}: ${typeof meta === 'string' ? meta : JSON.stringify( meta )}`);
+                 
+}
+
+let core = new Core();
+
+const App = core.createApp( {
+  log: winstonLogger,
+  rootComponents: [
+    // ...
+  ]
+} );
+ 
+// daemonix also has a log facility which could easily be used in conjunction with your StringStack/core app
+const daemonix = require( 'daemonix' );
+ 
+daemonix( { 
+  app: App,
+  log: function (level, message, meta) {
+    winstonLogger(level, 'daemonix', message, meta);
+  }
+} );
+ 
+```
+
+The handler function will receive a log level, the full path to the component triggering the log event, a string message
+and a meta object with relevant data about the log message. Meta might be an instance of Error, a random object literal,
+or some other piece of data to describe the log event beyond the message. However, 
+
+The component loader and the generated app, both parts of StringStack/core, will generate some log entries, as well as
+all StringStack/* components built by the StringStack team. The logs events generated will conform to the following
+practices as it pertains to log level. We use the same log level semantics recommended by RFC5424, 
+https://www.npmjs.com/package/winston, and Linux' syslog. 
+
+```json
+{ 
+  emerg: 0, // emergency: System is unusable. Complete system failure.
+  alert: 1, // alert: Action must be taken immediately. Potential data loss or curroption eminent.
+  crit: 2, // critical: Major system component failing, such as device IO error, network unreachable, etc.
+  error: 3, // error: An error occurred, but the system should be able to keep running otherwise.
+  warning: 4, // warning: Something less than ideal occurred, deprecated function call, bad request, etc.
+  notice: 5, // notice: Something significant happened, but is not a problem. This is startup, shutdown, etc.
+  info: 6, // information: Something common happened, is not a problem. 
+  debug: 7, // debug: Tracking as much detail as possible on the actions of the code, incudling sensative data.
+  silly: 8 // silly: Tracking every detail of code, including sensative data. 
+}
+```
+
+The recommended frequency with which log level should be called is as follows.
+
+
+```json
+{ 
+  emerg: 0, // emergency: Should trigger at any time, and should be logged any time it happens.
+  alert: 1, // alert: Should trigger at any time, and should be logged any time it happens.
+  crit: 2, // critical: Should trigger at any time, and should be logged any time it happens.
+  error: 3, // error: Should trigger at any time, and should be logged any time it happens.
+  warning: 4, // warning: Should trigger at any time, and should be logged any time it happens.
+  notice: 5, // notice: Should only trigger a finite amount of time relative to process lifetime and to a given time window. Should not fire with frequency congruent with system load.
+  info: 6, // information: Should only trigger a finite amount of time relative to system load. Where notice rate < frequency rate <= load/N, where N is some real number. 
+  debug: 7, // debug: May trigger with every system event with frequency >= load * N, where N is some real number.
+  silly: 8 // silly: Will trigger multiple times with every event with frequency >= load * N, where N is some real number > 1.
+}
+```
+
+Recommended actions for each log level are as follows.
+
+
+```json
+{ 
+  emerg: 0, // emergency: Shutdown the system and investigate. 
+  alert: 1, // alert: Shutdown the system and investigate. 
+  crit: 2, // critical: Shutdown the system and investigate. 
+  error: 3, // error: Investigate the error.
+  warning: 4, // warning: Investigate the warning.
+  notice: 5, // notice: Nothing, non-problem event.
+  info: 6, // information: Nothing, non-problem event. 
+  debug: 7, // debug: For development and debuging only. Do not run in production under normal conditions.
+  silly: 8 // silly: For development and debuging only. Do not run in production under normal conditions.
+}
+```
+
+
 # Daemonix for Linux Signal Management
 
 If you are running your application on a Linux/Mac/BSD/Unix/etc based system, including containers or app engines, we 
@@ -395,7 +507,7 @@ const App = core.createApp( {
   ]
 } );
  
-let daemonix = require( 'daemonix' );
+const daemonix = require( 'daemonix' );
  
 daemonix( { app: App } );
  
