@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 'use strict';
 
 const assert = require( 'assert' );
@@ -279,76 +280,76 @@ describe( 'general', function () {
 
           let actualEvents = getComponentManually( app, './test/lib/class.f' )._getEvents();
           let expectedEvents = [
-            "TestA:instantiate",
-            "TestB:instantiate",
-            "TestDatabase:instantiate",
-            "TestConfig:instantiate",
-            "TestC:instantiate",
-            "TestD:instantiate",
-            "TestE:instantiate",
-            "StaticH:instantiate",
-            "TestF:instantiate",
-            "TestG:instantiate",
-            "TestConfig:init",
-            "TestDatabase:init",
-            "TestG:init",
-            "TestF:init",
-            "StaticH:init",
-            "TestE:init",
-            "TestD:init",
-            "TestC:init",
-            "TestB:init",
-            "TestA:init",
-            "TestA:dinit",
-            "TestB:dinit",
-            "TestC:dinit",
-            "TestD:dinit",
-            "TestE:dinit",
-            "StaticH:dinit",
-            "TestF:dinit",
-            "TestG:dinit",
-            "TestDatabase:dinit",
-            "TestConfig:dinit",
-            "TestConfig:init",
-            "TestDatabase:init",
-            "TestG:init",
-            "TestF:init",
-            "StaticH:init",
-            "TestE:init",
-            "TestD:init",
-            "TestC:init",
-            "TestB:init",
-            "TestA:init",
-            "TestA:dinit",
-            "TestB:dinit",
-            "TestC:dinit",
-            "TestD:dinit",
-            "TestE:dinit",
-            "StaticH:dinit",
-            "TestF:dinit",
-            "TestG:dinit",
-            "TestDatabase:dinit",
-            "TestConfig:dinit",
-            "TestConfig:init",
-            "TestDatabase:init",
-            "TestG:init",
-            "TestF:init",
-            "StaticH:init",
-            "TestE:init",
-            "TestD:init",
-            "TestC:init",
-            "TestB:init",
-            "TestA:init",
-            "TestA:dinit",
-            "TestB:dinit",
-            "TestC:dinit",
-            "TestD:dinit",
-            "TestE:dinit",
-            "StaticH:dinit",
-            "TestF:dinit",
-            "TestG:dinit",
-            "TestDatabase:dinit",
-            "TestConfig:dinit"
+            'TestA:instantiate',
+            'TestB:instantiate',
+            'TestDatabase:instantiate',
+            'TestConfig:instantiate',
+            'TestC:instantiate',
+            'TestD:instantiate',
+            'TestE:instantiate',
+            'StaticH:instantiate',
+            'TestF:instantiate',
+            'TestG:instantiate',
+            'TestConfig:init',
+            'TestDatabase:init',
+            'TestG:init',
+            'TestF:init',
+            'StaticH:init',
+            'TestE:init',
+            'TestD:init',
+            'TestC:init',
+            'TestB:init',
+            'TestA:init',
+            'TestA:dinit',
+            'TestB:dinit',
+            'TestC:dinit',
+            'TestD:dinit',
+            'TestE:dinit',
+            'StaticH:dinit',
+            'TestF:dinit',
+            'TestG:dinit',
+            'TestDatabase:dinit',
+            'TestConfig:dinit',
+            'TestConfig:init',
+            'TestDatabase:init',
+            'TestG:init',
+            'TestF:init',
+            'StaticH:init',
+            'TestE:init',
+            'TestD:init',
+            'TestC:init',
+            'TestB:init',
+            'TestA:init',
+            'TestA:dinit',
+            'TestB:dinit',
+            'TestC:dinit',
+            'TestD:dinit',
+            'TestE:dinit',
+            'StaticH:dinit',
+            'TestF:dinit',
+            'TestG:dinit',
+            'TestDatabase:dinit',
+            'TestConfig:dinit',
+            'TestConfig:init',
+            'TestDatabase:init',
+            'TestG:init',
+            'TestF:init',
+            'StaticH:init',
+            'TestE:init',
+            'TestD:init',
+            'TestC:init',
+            'TestB:init',
+            'TestA:init',
+            'TestA:dinit',
+            'TestB:dinit',
+            'TestC:dinit',
+            'TestD:dinit',
+            'TestE:dinit',
+            'StaticH:dinit',
+            'TestF:dinit',
+            'TestG:dinit',
+            'TestDatabase:dinit',
+            'TestConfig:dinit'
           ];
 
           try {
@@ -422,42 +423,42 @@ describe( 'general', function () {
 
           let actualEvents = getComponentManually( app, './test/lib/class.node-module' )._getEvents();
           let expectedEvents = [
-            "TestNodeModule:instantiate",
-            "TestFakeModule:instantiate",
-            "TestA:instantiate",
-            "TestB:instantiate",
-            "TestDatabase:instantiate",
-            "TestConfig:instantiate",
-            "TestC:instantiate",
-            "TestD:instantiate",
-            "TestE:instantiate",
-            "StaticH:instantiate",
-            "TestF:instantiate",
-            "TestG:instantiate",
-            "TestConfig:init",
-            "TestDatabase:init",
-            "TestG:init",
-            "TestF:init",
-            "StaticH:init",
-            "TestE:init",
-            "TestD:init",
-            "TestC:init",
-            "TestB:init",
-            "TestA:init",
-            "TestFakeModule:init",
-            "TestNodeModule:init",
-            "TestNodeModule:dinit",
-            "TestFakeModule:dinit",
-            "TestA:dinit",
-            "TestB:dinit",
-            "TestC:dinit",
-            "TestD:dinit",
-            "TestE:dinit",
-            "StaticH:dinit",
-            "TestF:dinit",
-            "TestG:dinit",
-            "TestDatabase:dinit",
-            "TestConfig:dinit"
+            'TestNodeModule:instantiate',
+            'TestFakeModule:instantiate',
+            'TestA:instantiate',
+            'TestB:instantiate',
+            'TestDatabase:instantiate',
+            'TestConfig:instantiate',
+            'TestC:instantiate',
+            'TestD:instantiate',
+            'TestE:instantiate',
+            'StaticH:instantiate',
+            'TestF:instantiate',
+            'TestG:instantiate',
+            'TestConfig:init',
+            'TestDatabase:init',
+            'TestG:init',
+            'TestF:init',
+            'StaticH:init',
+            'TestE:init',
+            'TestD:init',
+            'TestC:init',
+            'TestB:init',
+            'TestA:init',
+            'TestFakeModule:init',
+            'TestNodeModule:init',
+            'TestNodeModule:dinit',
+            'TestFakeModule:dinit',
+            'TestA:dinit',
+            'TestB:dinit',
+            'TestC:dinit',
+            'TestD:dinit',
+            'TestE:dinit',
+            'StaticH:dinit',
+            'TestF:dinit',
+            'TestG:dinit',
+            'TestDatabase:dinit',
+            'TestConfig:dinit'
           ];
 
           try {
@@ -507,18 +508,18 @@ describe( 'general', function () {
           let actualEvents = getComponentManually( app, './test/lib/class.root-a' )._getEvents();
 
           let expectedEvents = [
-            "TestRootA:instantiate",
-            "TestRootB:instantiate",
-            "TestRootC:instantiate",
-            "TestRootD:instantiate",
-            "TestRootD:init",
-            "TestRootC:init",
-            "TestRootB:init",
-            "TestRootA:init",
-            "TestRootA:dinit",
-            "TestRootB:dinit",
-            "TestRootC:dinit",
-            "TestRootD:dinit"
+            'TestRootA:instantiate',
+            'TestRootB:instantiate',
+            'TestRootC:instantiate',
+            'TestRootD:instantiate',
+            'TestRootD:init',
+            'TestRootC:init',
+            'TestRootB:init',
+            'TestRootA:init',
+            'TestRootA:dinit',
+            'TestRootB:dinit',
+            'TestRootC:dinit',
+            'TestRootD:dinit'
           ];
 
           try {
@@ -721,7 +722,10 @@ describe( 'general', function () {
 
       let exception = null;
       try {
-        let app = new App( 'test' );
+
+        // eslint-disable-next-line no-new
+        new App( 'test' );
+
       } catch ( e ) {
         exception = e;
       }
@@ -760,33 +764,33 @@ describe( 'general', function () {
 
             let actualEvents = getComponentManually( app, './test/lib/class.cycle-a' )._getEvents();
             let expectedEvents = [
-              "TestCycleA:instantiate",
-              "TestCycleB:instantiate",
-              "TestCycleC:instantiate",
-              "TestCycleD:instantiate",
-              "TestCycleE:instantiate",
-              "TestCycleF:instantiate",
-              "TestCycleI:instantiate",
-              "TestCycleG:instantiate",
-              "TestCycleH:instantiate",
-              "TestCycleI:init",
-              "TestCycleF:init",
-              "TestCycleE:init",
-              "TestCycleD:init",
-              "TestCycleC:init",
-              "TestCycleH:init",
-              "TestCycleG:init",
-              "TestCycleB:init",
-              "TestCycleA:init",
-              "TestCycleA:dinit",
-              "TestCycleB:dinit",
-              "TestCycleG:dinit",
-              "TestCycleH:dinit",
-              "TestCycleC:dinit",
-              "TestCycleD:dinit",
-              "TestCycleE:dinit",
-              "TestCycleF:dinit",
-              "TestCycleI:dinit"
+              'TestCycleA:instantiate',
+              'TestCycleB:instantiate',
+              'TestCycleC:instantiate',
+              'TestCycleD:instantiate',
+              'TestCycleE:instantiate',
+              'TestCycleF:instantiate',
+              'TestCycleI:instantiate',
+              'TestCycleG:instantiate',
+              'TestCycleH:instantiate',
+              'TestCycleI:init',
+              'TestCycleF:init',
+              'TestCycleE:init',
+              'TestCycleD:init',
+              'TestCycleC:init',
+              'TestCycleH:init',
+              'TestCycleG:init',
+              'TestCycleB:init',
+              'TestCycleA:init',
+              'TestCycleA:dinit',
+              'TestCycleB:dinit',
+              'TestCycleG:dinit',
+              'TestCycleH:dinit',
+              'TestCycleC:dinit',
+              'TestCycleD:dinit',
+              'TestCycleE:dinit',
+              'TestCycleF:dinit',
+              'TestCycleI:dinit'
             ];
 
             try {
@@ -841,167 +845,167 @@ describe( 'general', function () {
 
             assert.deepStrictEqual( logHistory, [
               [
-                "info",
-                "loader",
-                "instantiating class component: " + dir + "/test/lib/class.log.a",
+                'info',
+                'loader',
+                'instantiating class component: ' + dir + '/test/lib/class.log.a',
                 undefined
               ],
               [
-                "info",
-                dir + "/test/lib/class.log.a",
-                "TestLogA constructor",
+                'info',
+                dir + '/test/lib/class.log.a',
+                'TestLogA constructor',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "info",
-                "loader",
-                "instantiating class component: " + dir + "/test/lib/class.log.b",
+                'info',
+                'loader',
+                'instantiating class component: ' + dir + '/test/lib/class.log.b',
                 undefined
               ],
               [
-                "info",
-                dir + "/test/lib/class.log.b",
-                "TestLogB constructor",
+                'info',
+                dir + '/test/lib/class.log.b',
+                'TestLogB constructor',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "verbose",
-                dir + "/test/lib/class.log.b",
-                "TestLogB constructor",
+                'verbose',
+                dir + '/test/lib/class.log.b',
+                'TestLogB constructor',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "notice",
-                "app",
-                "instantiated",
+                'notice',
+                'app',
+                'instantiated',
                 undefined
               ],
               [
-                "notice",
-                "loader",
-                "begin initializing components",
+                'notice',
+                'loader',
+                'begin initializing components',
                 undefined
               ],
               [
-                "debug",
-                dir + "/test/lib/class.log.b",
-                "TestLogB init",
+                'debug',
+                dir + '/test/lib/class.log.b',
+                'TestLogB init',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "info",
-                "loader",
-                "initialized component " + dir + "/test/lib/class.log.b",
+                'info',
+                'loader',
+                'initialized component ' + dir + '/test/lib/class.log.b',
                 undefined
               ],
               [
-                "debug",
-                dir + "/test/lib/class.log.a",
-                "TestLogA init",
+                'debug',
+                dir + '/test/lib/class.log.a',
+                'TestLogA init',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "warning",
-                dir + "/test/lib/class.log.a",
-                "TestLogA init warn",
+                'warning',
+                dir + '/test/lib/class.log.a',
+                'TestLogA init warn',
                 undefined
               ],
               [
-                "warning",
-                dir + "/test/lib/class.log.a",
-                "TestLogA init warning",
+                'warning',
+                dir + '/test/lib/class.log.a',
+                'TestLogA init warning',
                 undefined
               ],
               [
-                "info",
-                "loader",
-                "initialized component " + dir + "/test/lib/class.log.a",
+                'info',
+                'loader',
+                'initialized component ' + dir + '/test/lib/class.log.a',
                 undefined
               ],
               [
-                "info",
-                "loader",
-                "initialized component config",
+                'info',
+                'loader',
+                'initialized component config',
                 undefined
               ],
               [
-                "info",
-                "loader",
-                "initialized component env",
+                'info',
+                'loader',
+                'initialized component env',
                 undefined
               ],
               [
-                "notice",
-                "loader",
-                "finished initializing components",
+                'notice',
+                'loader',
+                'finished initializing components',
                 undefined
               ],
               [
-                "notice",
-                "loader",
-                "begin d-initializing components",
+                'notice',
+                'loader',
+                'begin d-initializing components',
                 undefined
               ],
               [
-                "info",
-                "loader",
-                "d-initialized component env",
+                'info',
+                'loader',
+                'd-initialized component env',
                 undefined
               ],
               [
-                "info",
-                "loader",
-                "d-initialized component config",
+                'info',
+                'loader',
+                'd-initialized component config',
                 undefined
               ],
               [
-                "debug",
-                dir + "/test/lib/class.log.a",
-                "TestLogA dinit",
+                'debug',
+                dir + '/test/lib/class.log.a',
+                'TestLogA dinit',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "info",
-                "loader",
-                "d-initialized component " + dir + "/test/lib/class.log.a",
+                'info',
+                'loader',
+                'd-initialized component ' + dir + '/test/lib/class.log.a',
                 undefined
               ],
               [
-                "debug",
-                dir + "/test/lib/class.log.b",
-                "TestLogB dinit",
+                'debug',
+                dir + '/test/lib/class.log.b',
+                'TestLogB dinit',
                 {
-                  "meta": "data"
+                  'meta': 'data'
                 }
               ],
               [
-                "info",
-                dir + "/test/lib/class.log.b",
-                "TestLogB information",
+                'info',
+                dir + '/test/lib/class.log.b',
+                'TestLogB information',
                 undefined
               ],
               [
-                "info",
-                "loader",
-                "d-initialized component " + dir + "/test/lib/class.log.b",
+                'info',
+                'loader',
+                'd-initialized component ' + dir + '/test/lib/class.log.b',
                 undefined
               ],
               [
-                "notice",
-                "loader",
-                "finished d-initializing components",
+                'notice',
+                'loader',
+                'finished d-initializing components',
                 undefined
               ]
             ], 'should pass log events to logger' );
