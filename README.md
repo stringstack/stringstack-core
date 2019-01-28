@@ -299,10 +299,10 @@ path for components that are a single file, or components that are a directory w
 
 ## Configuration
 
-StringStack/core a built in configuration space. It is implemented with nconf (https://www.npmjs.com/package/nconf). 
+StringStack/core has a built in configuration place. It is implemented with nconf (https://www.npmjs.com/package/nconf). 
 The current version of nconf being used is v0.10.0. 
 
-You can access the nconf instance with the dependency container. 
+You can access the nconf instance with the dependency container in the constructor of your component.
 
 ```javascript
   let config = deps.get( 'config' );
@@ -329,7 +329,13 @@ do something like this.
     
     constructor(deps) {
       
-      this._config = deps.get( 'config' );
+      // using inject vs get injects SetupConfig as a dependency of config. The nConf instance is still returned, but
+      // this means that SetupConfig will get initialized before config, and thus before anything that loads config
+      // using deps.get( 'config' ). For example, all StringStack/* components will load config with get(), this means
+      // that the SetupConfig.init() method will run before say StringStack/express. That allows you to pull down config
+      // asynchronously from some remote location, such as we do here inside the init() method. Config will be available
+      // before StringStack/express.init() method is called.
+      this._config = deps.inject( 'config' );
         
       // This is where you would do the synchronous config loads. If your configs are local, loading synchronously in 
       // the constructor will make that config available immediately to all components in your application.
@@ -374,7 +380,15 @@ do something like this.
 # Logging
 
 StringStack/core provides a logging facility that you can use to tap into your favorite logging tool. Simply pass a 
-logger function to the config for createApp() and get all the log writes from all components. Do so like this.
+logger function to the config for createApp() and get all the log writes from all components. You could wire up Winston
+like this.
+
+Note that the fields passed to the logging function are:
+
+level: This is a string. Your custom components can pass anything your logger understands. All @StringStack/* community components will use log levels as prescribed by https://www.npmjs.com/package/winston#logging-levels 
+component: This is the string name of the component that triggered the log event. The dependency injector will provide this field for you. The logging function passed into your component will only accept level, message and meta. 
+message: This is a string containing a message describing the event.
+meta: This is any value you want to associate with your message. @StringStack/* components may pass instances of Error as meta. 
 
 ```javascript
  
@@ -392,7 +406,7 @@ let winston = new (Winston.Logger)( {
   ]
 } );
 
-let winstonLogger = function ( level, path, message, meta ) {
+let winstonLogger = function ( level, component, message, meta ) {
                  
   // pass the event to your favorite logger, such as https://www.npmjs.com/package/winston OR, just console it.
   
@@ -400,7 +414,7 @@ let winstonLogger = function ( level, path, message, meta ) {
    meta = ` ${message.message}: ${message.stack}`;
   }
   
-  winston.log( level, `[${process.pid}] ${path}: ${message}: ${typeof meta === 'string' ? meta : JSON.stringify( meta )}`);
+  winston.log( level, `[${process.pid}] ${component}: ${message}: ${typeof meta === 'string' ? meta : JSON.stringify( meta )}`);
                  
 }
 
@@ -482,6 +496,44 @@ Recommended actions for each log level are as follows.
 }
 ```
 
+## Logging from Custom Components
+
+Accessing the logging function from within your custom component is accomplished like this.
+
+```javascript
+
+class CustomComponent {
+    
+    constructor(deps) {
+      
+      this._log = deps.get( 'logger' );
+      
+      this._log( 'info', 'I got my logger!' ); // notice you don't have to supply the component name
+      
+    }
+    
+    // ...
+    
+    someMethod( done ) {
+      
+      somethingElse( ( err ) => {
+      
+        if ( err ) {
+          this._log('err', 'Error doing something', err);
+        }
+        
+        done( err || null );
+        
+      })
+      
+      
+    }
+    
+  }
+  
+  module.exports = CustomComponent;
+
+```
 
 # Daemonix for Linux Signal Management
 
@@ -492,7 +544,7 @@ of CPU cores, or you can manually specify the number of cores to use.
 
 Check it out https://www.npmjs.com/package/daemonix
 
-With Daemonix you can run your application like this.
+With Daemonix you can run your entire StringStack application like this.
 
 ```javascript
  
@@ -502,8 +554,9 @@ let core = new Core();
  
 const App = core.createApp( {
   rootComponents: [
-     './lib/some-component-a',
-     './lib/some-component-b',
+     './lib/setup.config',
+     './lib/custom-component-a',
+     './lib/custom-component-b',
   ]
 } );
  
@@ -517,11 +570,7 @@ daemonix( { app: App } );
 
 One of the values of StringStack is the ability to include 3rd party libraries into your stack. Many of these 3rd party 
 libraries, such as StringStack/express, will require config. Each of these components will specify where they will look
-for config within the nconf component. The 3rd party component will also specify when the component expects config to be
-available. For example, it may require config to be available at init time. This means you can provide config at load
-or init time, since load time is before init. 
+for config within the nconf component.
 
-Another component may require its config to be available at load time so that it may access config in its constructor or 
-load method. However, we have yet to encounter a situation where load time config requirements is the result of anything 
-other than bad programming. If the developer of your 3rd party component requires load time config and has not made a 
-solid case for why they can't wait until init time, you should consider choosing a different 3rd party component.
+See the configuration section above for an example pattern on how to load config (even asychronously) into the config 
+instance before 3rd part components need the config.

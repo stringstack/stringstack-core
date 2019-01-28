@@ -47,8 +47,8 @@ let getComponentManually = function ( app, targetPath ) {
 
   targetPath = app._loader._normalizePath( targetPath );
 
-  if ( app._loader._components.hasOwnProperty( targetPath ) ) {
-    return app._loader._components[ targetPath ].instance;
+  if ( app._loader._componentInstances.hasOwnProperty( targetPath ) ) {
+    return app._loader._componentInstances[ targetPath ];
   }
 
   return null;
@@ -77,13 +77,13 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.f'
+          './test/lib/general/class.f'
         ]
       } );
       let app = new App( 'test' );
 
       // reset event log
-      getComponentManually( app, './test/lib/class.f' )._resetEvents();
+      getComponentManually( app, './test/lib/general/class.f' )._resetEvents();
 
     } );
 
@@ -91,11 +91,7 @@ describe( 'general', function () {
 
       let core = new Core();
 
-      let App = core.createApp( {
-        rootComponents: [
-          './test/lib/class.a'
-        ]
-      } );
+      let App = core.createApp();
       let app = new App( 'test' );
 
       async.series( [
@@ -129,11 +125,7 @@ describe( 'general', function () {
 
       let core = new Core();
 
-      let App = core.createApp( {
-        rootComponents: [
-          './test/lib/class.a'
-        ]
-      } );
+      let App = core.createApp();
       let app = new App( 'test' );
 
       async.series( [
@@ -180,11 +172,7 @@ describe( 'general', function () {
 
       let core = new Core();
 
-      let App = core.createApp( {
-        rootComponents: [
-          './test/lib/class.a'
-        ]
-      } );
+      let App = core.createApp();
       let app = new App( 'test' );
 
       async.series( [
@@ -243,10 +231,13 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.a'
+          './test/lib/general/class.config.setup',
+          './test/lib/general/class.a'
         ]
       } );
       let app = new App( 'test' );
+
+      // console.log( 'STACK', JSON.stringify( app._loader._components, null, 4 ) );
 
       // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
       // correctly on subsequent init/dinit cycles.
@@ -278,19 +269,19 @@ describe( 'general', function () {
         checkInitialized( app, false ),
         ( done ) => {
 
-          let actualEvents = getComponentManually( app, './test/lib/class.f' )._getEvents();
+          let actualEvents = getComponentManually( app, './test/lib/general/class.a' )._getEvents();
           let expectedEvents = [
+            'TestConfigSetup:instantiate',
             'TestA:instantiate',
             'TestB:instantiate',
             'TestDatabase:instantiate',
-            'TestConfig:instantiate',
             'TestC:instantiate',
             'TestD:instantiate',
             'TestE:instantiate',
             'StaticH:instantiate',
             'TestF:instantiate',
             'TestG:instantiate',
-            'TestConfig:init',
+            'TestConfigSetup:init',
             'TestDatabase:init',
             'TestG:init',
             'TestF:init',
@@ -309,8 +300,8 @@ describe( 'general', function () {
             'TestF:dinit',
             'TestG:dinit',
             'TestDatabase:dinit',
-            'TestConfig:dinit',
-            'TestConfig:init',
+            'TestConfigSetup:dinit',
+            'TestConfigSetup:init',
             'TestDatabase:init',
             'TestG:init',
             'TestF:init',
@@ -329,8 +320,8 @@ describe( 'general', function () {
             'TestF:dinit',
             'TestG:dinit',
             'TestDatabase:dinit',
-            'TestConfig:dinit',
-            'TestConfig:init',
+            'TestConfigSetup:dinit',
+            'TestConfigSetup:init',
             'TestDatabase:init',
             'TestG:init',
             'TestF:init',
@@ -349,7 +340,7 @@ describe( 'general', function () {
             'TestF:dinit',
             'TestG:dinit',
             'TestDatabase:dinit',
-            'TestConfig:dinit'
+            'TestConfigSetup:dinit'
           ];
 
           try {
@@ -375,7 +366,7 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.node-module'
+          './test/lib/general/class.node-module'
         ]
       } );
       let app = null;
@@ -421,21 +412,19 @@ describe( 'general', function () {
         },
         ( done ) => {
 
-          let actualEvents = getComponentManually( app, './test/lib/class.node-module' )._getEvents();
+          let actualEvents = getComponentManually( app, './test/lib/general/class.node-module' )._getEvents();
           let expectedEvents = [
             'TestNodeModule:instantiate',
             'TestFakeModule:instantiate',
             'TestA:instantiate',
             'TestB:instantiate',
             'TestDatabase:instantiate',
-            'TestConfig:instantiate',
             'TestC:instantiate',
             'TestD:instantiate',
             'TestE:instantiate',
             'StaticH:instantiate',
             'TestF:instantiate',
             'TestG:instantiate',
-            'TestConfig:init',
             'TestDatabase:init',
             'TestG:init',
             'TestF:init',
@@ -457,8 +446,7 @@ describe( 'general', function () {
             'StaticH:dinit',
             'TestF:dinit',
             'TestG:dinit',
-            'TestDatabase:dinit',
-            'TestConfig:dinit'
+            'TestDatabase:dinit'
           ];
 
           try {
@@ -484,8 +472,8 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.root-a',
-          './test/lib/class.root-c'
+          './test/lib/root/class.a',
+          './test/lib/root/class.c'
         ]
       } );
 
@@ -505,7 +493,7 @@ describe( 'general', function () {
         checkInitialized( app, false ),
         ( done ) => {
 
-          let actualEvents = getComponentManually( app, './test/lib/class.root-a' )._getEvents();
+          let actualEvents = getComponentManually( app, './test/lib/root/class.a' )._getEvents();
 
           let expectedEvents = [
             'TestRootA:instantiate',
@@ -513,12 +501,12 @@ describe( 'general', function () {
             'TestRootC:instantiate',
             'TestRootD:instantiate',
             'TestRootD:init',
-            'TestRootC:init',
             'TestRootB:init',
+            'TestRootC:init',
             'TestRootA:init',
             'TestRootA:dinit',
-            'TestRootB:dinit',
             'TestRootC:dinit',
+            'TestRootB:dinit',
             'TestRootD:dinit'
           ];
 
@@ -544,7 +532,7 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.a'
+          './test/lib/general/class.a'
         ]
       } );
       let app = new App( 'test' );
@@ -581,7 +569,7 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.err.get_init'
+          './test/lib/err/class.get_init'
         ]
       } );
       let app = new App( 'test' );
@@ -598,7 +586,7 @@ describe( 'general', function () {
         try {
 
           assert.equal( err.message,
-            'you must access your dependencies in your constructor only',
+            'you must access your dependencies in your constructor or load() method only',
             'error message does not match' );
 
         } catch ( e ) {
@@ -617,7 +605,7 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.err.get_dinit'
+          './test/lib/err/class.get_dinit'
         ]
       } );
       let app = new App( 'test' );
@@ -642,7 +630,7 @@ describe( 'general', function () {
 
           assert.equal( initGood, true, 'should have passed init without error' );
           assert.equal( err.message,
-            'you must access your dependencies in your constructor only',
+            'you must access your dependencies in your constructor or load() method only',
             'error message does not match' );
 
         } catch ( e ) {
@@ -655,13 +643,13 @@ describe( 'general', function () {
 
     } );
 
-    it( 'should return throw an error if attempting to get a dependency in any general method', function ( done ) {
+    it( 'should throw an error if attempting to get a dependency in any general method', function ( done ) {
 
       let core = new Core();
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.err.get_method'
+          './test/lib/err/class.get_method'
         ]
       } );
       let app = new App( 'test' );
@@ -678,7 +666,7 @@ describe( 'general', function () {
           initGood = true;
 
           try {
-            getComponentManually( app, './test/lib/class.err.get_method' ).method( done );
+            getComponentManually( app, './test/lib/err/class.get_method' ).method( done );
           } catch ( e ) {
             return done( e );
           }
@@ -697,7 +685,7 @@ describe( 'general', function () {
           assert.equal( initGood, true, 'should have passed init without error' );
           assert.equal( dinitGood, true, 'should not have gotten to dinit' );
           assert.equal( err.message,
-            'you must access your dependencies in your constructor only',
+            'you must access your dependencies in your constructor or load() method only',
             'error message does not match' );
 
         } catch ( e ) {
@@ -716,7 +704,33 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.err.load-self'
+          './test/lib/err/class.load-self'
+        ]
+      } );
+
+      let exception = null;
+      try {
+
+        // eslint-disable-next-line no-new
+        new App( 'test' );
+
+      } catch ( e ) {
+        exception = e;
+      }
+
+      assert.ok( exception, 'failed to throw exception' );
+      assert.equal( exception.message, 'dependency cycle created' );
+
+
+    } );
+
+    it( 'should throw an error if a dependency cycle is created', function () {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/cycle.err/class.a'
         ]
       } );
 
@@ -743,7 +757,7 @@ describe( 'general', function () {
 
         let App = core.createApp( {
           rootComponents: [
-            './test/lib/class.cycle-a'
+            './test/lib/non-cycle/class.a'
           ]
         } );
         let app = new App( 'test' );
@@ -762,35 +776,35 @@ describe( 'general', function () {
           checkInitialized( app, false ),
           ( done ) => {
 
-            let actualEvents = getComponentManually( app, './test/lib/class.cycle-a' )._getEvents();
+            let actualEvents = getComponentManually( app, './test/lib/non-cycle/class.a' )._getEvents();
             let expectedEvents = [
-              'TestCycleA:instantiate',
-              'TestCycleB:instantiate',
-              'TestCycleC:instantiate',
-              'TestCycleD:instantiate',
-              'TestCycleE:instantiate',
-              'TestCycleF:instantiate',
-              'TestCycleI:instantiate',
-              'TestCycleG:instantiate',
-              'TestCycleH:instantiate',
-              'TestCycleI:init',
-              'TestCycleF:init',
-              'TestCycleE:init',
-              'TestCycleD:init',
-              'TestCycleC:init',
-              'TestCycleH:init',
-              'TestCycleG:init',
-              'TestCycleB:init',
-              'TestCycleA:init',
-              'TestCycleA:dinit',
-              'TestCycleB:dinit',
-              'TestCycleG:dinit',
-              'TestCycleH:dinit',
-              'TestCycleC:dinit',
-              'TestCycleD:dinit',
-              'TestCycleE:dinit',
-              'TestCycleF:dinit',
-              'TestCycleI:dinit'
+              'TestNonCycleA:instantiate',
+              'TestNonCycleB:instantiate',
+              'TestNonCycleC:instantiate',
+              'TestNonCycleD:instantiate',
+              'TestNonCycleE:instantiate',
+              'TestNonCycleF:instantiate',
+              'TestNonCycleI:instantiate',
+              'TestNonCycleG:instantiate',
+              'TestNonCycleH:instantiate',
+              'TestNonCycleI:init',
+              'TestNonCycleF:init',
+              'TestNonCycleE:init',
+              'TestNonCycleD:init',
+              'TestNonCycleC:init',
+              'TestNonCycleH:init',
+              'TestNonCycleG:init',
+              'TestNonCycleB:init',
+              'TestNonCycleA:init',
+              'TestNonCycleA:dinit',
+              'TestNonCycleB:dinit',
+              'TestNonCycleG:dinit',
+              'TestNonCycleH:dinit',
+              'TestNonCycleC:dinit',
+              'TestNonCycleD:dinit',
+              'TestNonCycleE:dinit',
+              'TestNonCycleF:dinit',
+              'TestNonCycleI:dinit'
             ];
 
             try {
@@ -818,7 +832,7 @@ describe( 'general', function () {
 
       let App = core.createApp( {
         rootComponents: [
-          './test/lib/class.log.a'
+          './test/lib/log/class.a'
         ],
         log: ( level, path, message, meta ) => {
           logHistory.push( [ level, path, message, meta ] );
@@ -847,12 +861,12 @@ describe( 'general', function () {
               [
                 'info',
                 'loader',
-                'instantiating class component: ' + dir + '/test/lib/class.log.a',
+                'instantiating class component: ' + dir + '/test/lib/log/class.a',
                 undefined
               ],
               [
                 'info',
-                dir + '/test/lib/class.log.a',
+                dir + '/test/lib/log/class.a',
                 'TestLogA constructor',
                 {
                   'meta': 'data'
@@ -861,12 +875,12 @@ describe( 'general', function () {
               [
                 'info',
                 'loader',
-                'instantiating class component: ' + dir + '/test/lib/class.log.b',
+                'instantiating class component: ' + dir + '/test/lib/log/class.b',
                 undefined
               ],
               [
                 'info',
-                dir + '/test/lib/class.log.b',
+                dir + '/test/lib/log/class.b',
                 'TestLogB constructor',
                 {
                   'meta': 'data'
@@ -874,7 +888,7 @@ describe( 'general', function () {
               ],
               [
                 'verbose',
-                dir + '/test/lib/class.log.b',
+                dir + '/test/lib/log/class.b',
                 'TestLogB constructor',
                 {
                   'meta': 'data'
@@ -894,7 +908,7 @@ describe( 'general', function () {
               ],
               [
                 'debug',
-                dir + '/test/lib/class.log.b',
+                dir + '/test/lib/log/class.b',
                 'TestLogB init',
                 {
                   'meta': 'data'
@@ -903,12 +917,12 @@ describe( 'general', function () {
               [
                 'info',
                 'loader',
-                'initialized component ' + dir + '/test/lib/class.log.b',
+                'initialized component ' + dir + '/test/lib/log/class.b',
                 undefined
               ],
               [
                 'debug',
-                dir + '/test/lib/class.log.a',
+                dir + '/test/lib/log/class.a',
                 'TestLogA init',
                 {
                   'meta': 'data'
@@ -916,20 +930,20 @@ describe( 'general', function () {
               ],
               [
                 'warning',
-                dir + '/test/lib/class.log.a',
+                dir + '/test/lib/log/class.a',
                 'TestLogA init warn',
                 undefined
               ],
               [
                 'warning',
-                dir + '/test/lib/class.log.a',
+                dir + '/test/lib/log/class.a',
                 'TestLogA init warning',
                 undefined
               ],
               [
                 'info',
                 'loader',
-                'initialized component ' + dir + '/test/lib/class.log.a',
+                'initialized component ' + dir + '/test/lib/log/class.a',
                 undefined
               ],
               [
@@ -942,6 +956,12 @@ describe( 'general', function () {
                 'info',
                 'loader',
                 'initialized component env',
+                undefined
+              ],
+              [
+                'info',
+                'loader',
+                'initialized component app',
                 undefined
               ],
               [
@@ -959,6 +979,12 @@ describe( 'general', function () {
               [
                 'info',
                 'loader',
+                'd-initialized component app',
+                undefined
+              ],
+              [
+                'info',
+                'loader',
                 'd-initialized component env',
                 undefined
               ],
@@ -970,7 +996,7 @@ describe( 'general', function () {
               ],
               [
                 'debug',
-                dir + '/test/lib/class.log.a',
+                dir + '/test/lib/log/class.a',
                 'TestLogA dinit',
                 {
                   'meta': 'data'
@@ -979,12 +1005,12 @@ describe( 'general', function () {
               [
                 'info',
                 'loader',
-                'd-initialized component ' + dir + '/test/lib/class.log.a',
+                'd-initialized component ' + dir + '/test/lib/log/class.a',
                 undefined
               ],
               [
                 'debug',
-                dir + '/test/lib/class.log.b',
+                dir + '/test/lib/log/class.b',
                 'TestLogB dinit',
                 {
                   'meta': 'data'
@@ -992,14 +1018,14 @@ describe( 'general', function () {
               ],
               [
                 'info',
-                dir + '/test/lib/class.log.b',
+                dir + '/test/lib/log/class.b',
                 'TestLogB information',
                 undefined
               ],
               [
                 'info',
                 'loader',
-                'd-initialized component ' + dir + '/test/lib/class.log.b',
+                'd-initialized component ' + dir + '/test/lib/log/class.b',
                 undefined
               ],
               [

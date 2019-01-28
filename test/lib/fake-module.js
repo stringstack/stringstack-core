@@ -8,7 +8,7 @@ class TestFakeModule extends TestBase {
   constructor( deps ) {
     super( deps, 'TestFakeModule' );
 
-    this._a = deps.get( './test/lib/class.a' );
+    this._a = deps.get( './test/lib/general/class.a' );
 
   }
 

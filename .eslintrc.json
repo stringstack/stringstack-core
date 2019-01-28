@@ -23,6 +23,7 @@
     "no-throw-literal": "error",
     "no-return-assign": "error",
     "no-new": "error",
+    "no-console": "off",
     "no-multi-spaces": "error",
     "no-loop-func": "error",
     "no-implicit-globals": "error",
