@@ -1,7 +1,7 @@
 {
   "name": "@stringstack/core",
   "description": "StringStack Core",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/StringStack/stringstack-core.git"

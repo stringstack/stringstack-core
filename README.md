@@ -99,9 +99,13 @@ Internal StringStack engineers only use form 1 for StringStack components and fo
 ### Interface Methods
 
 The methods of each form are constructor, init, dinit; and load, init, dinit; respectively. The constructor and load
-methods both accept a dependency container. The dependency container has one method `get(path)`. Path is a string 
-containing the path of the component to be retrieved. See the Path Resolution section in this document to know how paths
-are resolved.
+methods both accept a dependency container. The dependency container has two methods `get( path )` and `inject( path )`. 
+Path is a string containing the path of the component to be retrieved. See the Path Resolution section in this document 
+to know how paths are resolved. The difference between the two methods is whether the calling component depends on the
+target, or if the calling component is injecting itself as a dependency of the target path. 
+
+get( path ): This instructs the dependency management system that the calling component depends on the component identified by path.
+inject( path ): This instructs the dependency management system that the calling component must be injected as a dependency of the component identified by path. See the section on configuration for an example of why this might be useful.
 
 Each component MUST get all of its dependencies in its constructor or load method. If you attempt to get a dependency 
 outside of one of these methods an exception will be through by the container. 
