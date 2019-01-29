@@ -360,6 +360,60 @@ describe( 'general', function () {
 
     } );
 
+    it( 'should load dependencies correctly on injection', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/inject/class.a'
+        ]
+      } );
+      let app = new App( 'test' );
+
+      // console.log( 'STACK', JSON.stringify( app._loader._components, null, 4 ) );
+
+      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        checkInitialized( app, false ),
+        ( done ) => {
+          app.init( done );
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+          app.dinit( done );
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+
+          let actualEvents = getComponentManually( app, './test/lib/inject/class.a' )._getEvents();
+          let expectedEvents = [
+            'TestA:instantiate',
+            'TestB:instantiate',
+            'TestA:init',
+            'TestB:init',
+            'TestB:dinit',
+            'TestA:dinit'
+          ];
+
+          try {
+
+            assert.deepStrictEqual( actualEvents,
+              expectedEvents,
+              'log of instantiation, initialization and d-initialization is not correct' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
+
     it( 'should load dependencies correctly including node_modules in the correct order', function ( done ) {
 
       let core = new Core();
