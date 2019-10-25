@@ -20,9 +20,9 @@ let checkInitialized = function ( app, initialized ) {
         }
 
         assert.equal(
-          app._loader._components[ path ].initialized,
+          app._loader._components[path].initialized,
           initialized,
-          'module path ' + path + ' should be ' + (initialized ? 'initialized' : 'dinitialized')
+          'module path ' + path + ' should be ' + ( initialized ? 'initialized' : 'dinitialized' )
         );
 
       } );
@@ -48,7 +48,7 @@ let getComponentManually = function ( app, targetPath ) {
   targetPath = app._loader._normalizePath( targetPath );
 
   if ( app._loader._componentInstances.hasOwnProperty( targetPath ) ) {
-    return app._loader._componentInstances[ targetPath ];
+    return app._loader._componentInstances[targetPath];
   }
 
   return null;
@@ -983,7 +983,7 @@ describe( 'general', function () {
                 }
               ],
               [
-                'warning',
+                'warn',
                 dir + '/test/lib/log/class.a',
                 'TestLogA init warn',
                 undefined
@@ -1071,7 +1071,7 @@ describe( 'general', function () {
                 }
               ],
               [
-                'info',
+                'information',
                 dir + '/test/lib/log/class.b',
                 'TestLogB information',
                 undefined

@@ -5,6 +5,7 @@ const TestBase = require( '../class.base' );
 class TestLogA extends TestBase {
 
   constructor( deps ) {
+
     super( deps, 'TestLogA' );
 
     this._logger = deps.get( 'logger' );
