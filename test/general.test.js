@@ -360,6 +360,264 @@ describe( 'general', function () {
 
     } );
 
+    it( 'should allow test access via testComponent()', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/general/class.config.setup',
+          './test/lib/general/class.a'
+        ]
+      } );
+      let app = new App( 'test' );
+
+      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        ( done ) => {
+
+          try {
+            const component = app.testComponent( './test/lib/general/class.d' );
+            assert.strictEqual( component.isInitialized(), false, 'component should not be initialized' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+          app.init( done );
+        },
+        ( done ) => {
+
+          try {
+            const component = app.testComponent( './test/lib/general/class.d' );
+            assert.strictEqual( component.isInitialized(), true, 'component should be initialized' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+          app.dinit( done );
+        },
+        ( done ) => {
+
+          try {
+            const component = app.testComponent( './test/lib/general/class.d' );
+            assert.strictEqual( component.isInitialized(), false, 'component should not be initialized' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+
+          let actualEvents = getComponentManually( app, './test/lib/general/class.a' )._getEvents();
+          let expectedEvents = [
+            'TestConfigSetup:instantiate',
+            'TestA:instantiate',
+            'TestB:instantiate',
+            'TestDatabase:instantiate',
+            'TestC:instantiate',
+            'TestD:instantiate',
+            'TestE:instantiate',
+            'StaticH:instantiate',
+            'TestF:instantiate',
+            'TestG:instantiate',
+            'TestConfigSetup:init',
+            'TestDatabase:init',
+            'TestG:init',
+            'TestF:init',
+            'StaticH:init',
+            'TestE:init',
+            'TestD:init',
+            'TestC:init',
+            'TestB:init',
+            'TestA:init',
+            'TestA:dinit',
+            'TestB:dinit',
+            'TestC:dinit',
+            'TestD:dinit',
+            'TestE:dinit',
+            'StaticH:dinit',
+            'TestF:dinit',
+            'TestG:dinit',
+            'TestDatabase:dinit',
+            'TestConfigSetup:dinit'
+          ];
+
+          try {
+
+            assert.deepStrictEqual( actualEvents,
+              expectedEvents,
+              'log of instantiation, initialization and d-initialization is not correct' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
+
+    it( 'should allow test access via testComponent() for other compatible environment names', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/general/class.config.setup',
+          './test/lib/general/class.a'
+        ]
+      } );
+      let app = new App( 'testing' );
+
+      // init/dinit over and over. It is up to the actual modules to ensure they reset their internal state
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        ( done ) => {
+
+          try {
+            const component = app.testComponent( './test/lib/general/class.d' );
+            assert.strictEqual( component.isInitialized(), false, 'component should not be initialized' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+          app.init( done );
+        },
+        ( done ) => {
+
+          try {
+            const component = app.testComponent( './test/lib/general/class.d' );
+            assert.strictEqual( component.isInitialized(), true, 'component should be initialized' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        },
+        checkInitialized( app, true ),
+        ( done ) => {
+          app.dinit( done );
+        },
+        ( done ) => {
+
+          try {
+            const component = app.testComponent( './test/lib/general/class.d' );
+            assert.strictEqual( component.isInitialized(), false, 'component should not be initialized' );
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        },
+        checkInitialized( app, false ),
+        ( done ) => {
+
+          let actualEvents = getComponentManually( app, './test/lib/general/class.a' )._getEvents();
+          let expectedEvents = [
+            'TestConfigSetup:instantiate',
+            'TestA:instantiate',
+            'TestB:instantiate',
+            'TestDatabase:instantiate',
+            'TestC:instantiate',
+            'TestD:instantiate',
+            'TestE:instantiate',
+            'StaticH:instantiate',
+            'TestF:instantiate',
+            'TestG:instantiate',
+            'TestConfigSetup:init',
+            'TestDatabase:init',
+            'TestG:init',
+            'TestF:init',
+            'StaticH:init',
+            'TestE:init',
+            'TestD:init',
+            'TestC:init',
+            'TestB:init',
+            'TestA:init',
+            'TestA:dinit',
+            'TestB:dinit',
+            'TestC:dinit',
+            'TestD:dinit',
+            'TestE:dinit',
+            'StaticH:dinit',
+            'TestF:dinit',
+            'TestG:dinit',
+            'TestDatabase:dinit',
+            'TestConfigSetup:dinit'
+          ];
+
+          try {
+
+            assert.deepStrictEqual( actualEvents,
+              expectedEvents,
+              'log of instantiation, initialization and d-initialization is not correct' );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+
+        }
+      ], done );
+
+    } );
+
+    it( 'should not allow test access via testComponent() when environment name doesn\'t start with test', function ( done ) {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/general/class.config.setup',
+          './test/lib/general/class.a'
+        ]
+      } );
+      let app = new App( 'production' );
+
+      // correctly on subsequent init/dinit cycles.
+      async.series( [
+        ( done ) => {
+
+          try {
+
+            assert.throws(
+              () => {
+                app.testComponent( './test/lib/general/class.d' );
+              },
+              {
+                message: 'testComponent() is only indented for testing environment, ensure you instantiate App with an environment name beginning with the word \'test\' in order to access this method.'
+              },
+              'error message does not match'
+            );
+
+          } catch ( e ) {
+            return done( e );
+          }
+
+          done();
+        }
+      ], done );
+
+    } );
+
     it( 'should load dependencies correctly on injection', function ( done ) {
 
       let core = new Core();

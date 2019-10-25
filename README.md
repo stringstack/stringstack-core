@@ -43,6 +43,7 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
     * [Configuration for 3rd Party Components](#configuration-for-3rd-party-components)
 * [Logging](#logging)
     * [Logging from Custom Components](#logging-from-custom-components)
+* [Testing](#testing)
 * [Daemonix for Creating Proper Linux Services](#daemonix-for-creating-proper-linux-services)
 
 
@@ -853,6 +854,67 @@ class CustomComponent {
   module.exports = CustomComponent;
 
 ```
+
+## Testing
+
+StringStack provides a way to access components for easy testing. In order to access the testing method to extract
+components your environment name string must begin with the word 'test'. Any of these environment names works:
+
+'test'
+'test-4'
+'testing'
+'testing-3'
+'tester'
+'tester-1'
+'test      '
+'test this'
+
+If you have a valid environment name set for testing, then you can access testComponent() method. Do so like this.
+
+```javascript
+
+    let core = new Core();
+
+    let App = core.createApp( {
+        rootComponents: [
+          './lib/configSetup', // you may or may not need this, depending on how you want to test componentToTest
+          './lib/componentToTest'
+        ]
+    } );
+
+    let app = new App( 'test' );
+
+    let componentToTest = app.testComponent( './lib/componentToTest' );
+  
+    // Now do testing on componentToTest pre-initialization
+    
+    app.init( ( err ) => {
+  
+        // test if componentToTest initializes correctly    
+        
+        // You can also test componentToTest initialized
+
+    } );
+
+```
+
+### Coming Soon
+
+Currently when you access a component for testing it will pull in its dependencies without a way for you to override
+dependencies. So there is no way to mock the dependencies of the component you want to test. We are working on a way
+to override dependencies. We are currently deciding on what the interface should look like. Some of the questions we are
+still trying to settle are:
+
+* Should we provide dependency injection overrides as part of the call to createApp() or on the instantiation of App?
+(We think, createApp())
+
+* Should the dependency injection overrides impact all components that request that dependency, or should we be able to
+isolate the override for specific dependents? (We think, all)
+
+* When an override is specified, should it accept an alternate path name string only, a Class reference only, or both?
+(We think, both)
+
+* Should we allow overriding the built-in components, such as logger, env and config? (We think, yes.)
 
 ## Daemonix for Creating Proper Linux Services
 
