@@ -8,6 +8,10 @@ class TestD extends TestBase {
     super( deps, 'TestD' );
   }
 
+  isInitialized() {
+    return this._initialized;
+  }
+
 }
 
 module.exports = TestD;
