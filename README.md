@@ -1,7 +1,7 @@
-# StringStack Core
+# StringStack
 
-StringStack/core is the dependency management and injection system at the heart of the StringStack ecosystem of 
-components. It is responsible for instantiating, initializing and d-initializing components in the correct order.
+StringStack is the dependency management and injection system at the heart of the StringStack ecosystem of components. 
+It is responsible for instantiating, initializing and d-initializing components in the correct order.
 
 StringStack has a very short list of very important objectives in the world of Node.js, from most to least important:
 
@@ -23,6 +23,7 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
 
 ## Table of Contents
 
+* [Installation](#installation)
 * [Component Interfaces](#component-interfaces)
     * [Choosing a Form](#choosing-a-form)
         * [Form 1 - ES6 Class](#form-1---es6-class)
@@ -46,6 +47,16 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
 * [Testing](#testing)
 * [Daemonix for Creating Proper Linux Services](#daemonix-for-creating-proper-linux-services)
 
+## Installation
+
+```bash
+npm install stringstack --save
+```
+
+This will also install ExpressJS for you. See the version log at the end of this document to see which version of 
+ExpressJS is provided with each version of StringStack/express. 
+
+# Configuration
 
 ## Component Interfaces
 
@@ -305,7 +316,7 @@ can initialize all the HTTP routes before any HTTP ports are opened.
 
 Ok, so you build a bunch of components, now what? This... This is what....
 
-1. Create an instance of StringStack/core.
+1. Create an instance of StringStack.
 1. call core.createApp() to create an App class that starts and stops your application.
 1. Instantiate App class.
 1. Call app.init().
@@ -316,7 +327,7 @@ system.
 
 ```javascript
  
-const Core = require( '@stringstack/core' );
+const Core = require( 'stringstack' );
  
 let core = new Core();
  
@@ -397,11 +408,11 @@ details below to see exactly how each value works.
 
 The log method accepts the following four parameters:
 
-level: This can be any string. StringStack/core will force it to lowercase, so it is a little opinionated about that.
+level: This can be any string. StringStack will force it to lowercase, so it is a little opinionated about that.
 Otherwise it will pass through directly to your log handler from each component. 
 
 component: This is a string value of the component path. This is the same string value you would use to load the 
-component via deps.get() in your constructor. It is provided by StringStack/core automatically. 
+component via deps.get() in your constructor. It is provided by StringStack automatically. 
 
 message: This should be a string. It is up to your components to use message correctly. 
 
@@ -602,7 +613,7 @@ path for components that are a single file, or components that are a directory w
 
 ## Configuration
 
-StringStack/core has a built in configuration place. It is implemented with [nconf](https://www.npmjs.com/package/nconf)
+StringStack has a built in configuration place. It is implemented with [nconf](https://www.npmjs.com/package/nconf)
 . The current version of nconf being used is v0.10.0. 
 
 You can access the nconf instance with the dependency container in the constructor of your component.
@@ -690,7 +701,7 @@ See the documentation of each 3rd party component to know how to configure them.
 
 ## Logging
 
-StringStack/core provides a logging router that you can use to tap into your favorite logging tool. Simply pass a 
+StringStack provides a logging router that you can use to tap into your favorite logging tool. Simply pass a 
 logger function to the config for createApp() and get all the log writes from all components. You could wire up Winston
 like this.
 
@@ -709,7 +720,7 @@ as meta or an object that can be serialized with JSON.stringify().
 
 ```javascript
  
-const Core = require('@stringstack/core');
+const Core = require('stringstack');
 const Winston = require( 'winston' );
 
 // log to stdout/stderr
@@ -744,7 +755,7 @@ const App = core.createApp( {
   ]
 } );
  
-// daemonix also has a log facility which could easily be used in conjunction with your StringStack/core app
+// daemonix also has a log facility which could easily be used in conjunction with your StringStack app
 const daemonix = require( 'daemonix' );
  
 daemonix( { 
@@ -760,7 +771,7 @@ The handler function will receive a log level, the full path to the component tr
 and an optional meta object with relevant data about the log message. Meta might be an instance of Error, a random 
 object literal, or some other piece of data to describe the log event beyond the message.
 
-The component loader and the generated app, both parts of StringStack/core, will generate some log entries, as well as
+The component loader and the generated app, both parts of StringStack, will generate some log entries, as well as
 all StringStack/* components built by the StringStack team. The log events generated will conform to the following
 practices as it pertains to log level. We use the same log level semantics recommended by RFC5424, 
 https://www.npmjs.com/package/winston, and Linux' syslog. 
@@ -929,7 +940,7 @@ With Daemonix you can run your entire StringStack application like this.
 
 ```javascript
  
-const Core = require('@stringstack/core');
+const Core = require('stringstack');
  
 let core = new Core();
  
