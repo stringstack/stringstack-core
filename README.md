@@ -40,7 +40,7 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
 * [StringStack Life Cycle](#stringstack-life-cycle)
     * [Cheat Sheet](#cheat-sheet)
 * [Path Resolution](#path-resolution)
-* [Configuration Setup](#configuration-setup)
+* [Configuration](#configuration)
     * [Configuration for 3rd Party Components](#configuration-for-3rd-party-components)
 * [Logging](#logging)
     * [Logging from Custom Components](#logging-from-custom-components)
@@ -51,81 +51,6 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
 
 ```bash
 npm install stringstack --save
-```
-
-This will also install ExpressJS for you. See the version log at the end of this document to see which version of 
-ExpressJS is provided with each version of StringStack/express. 
-
-## Configuration Setup
-
-To configure your custom components as well as 3rd party components you need to boot strap a root component that 
-populates the values in the ```config``` component. This config setup component should inject config, then load all
-values into the nconf instance returned by ```deps.inject( 'config' )```. Here is an example config setup component.
-
-3rd party components should tell you where to put there config. In this example we have enabled both HTTP and HTTPS 
-listeners for the component [@StringStack/express](https://www.npmjs.com/package/@stringstack/express).
-
-```javascript
-
-// file located at lib/setup/config.js
- 
-'use strict';
-
-class SetupConfig {
-
-    constructor( deps ) {
-    
-      // ensure this config setup inits before config inits
-      this._nconf = deps.inject( 'config' );
-    
-    }
-
-    init( done ) {
-    
-        // pulls in config from a file.
-        // technically this is a synchronous load, and could go in the constructor, but a stronger pattern is to load
-        // config in init and at least pretend it is asynchronous. 
-        this._nconf.file( process.cwd() + '/config.json');
-
-        this._nconf.defaults( {
-            stringstack: {
-                express: { // if we were going to use @stringstack/express with this application, this is its config
-                    http: {
-                     enabled: true
-                    },
-                    https: {
-                     enabled: true
-                    }
-                }
-            }
-        } );
-        
-        done();
-    
-    }
-
-}
-
-module.exports = SetupConfig;
-
-```
-
-Then your app file might look like this.
-
-```javascript
-'use strict';
-
-const StringStack = require( 'stringstack' );
-
-let stringstack = new StringStack();
-
-const App = stringstack.createApp( {
-    rootComponents: [
-        './lib/setup/config'
-    ]
-} );
-
-module.exports = App;
 ```
 
 ## Component Interfaces
@@ -764,10 +689,81 @@ do something like this.
 ### Configuration for 3rd Party Components
 
 One of the values of StringStack is the ability to include 3rd party libraries into your stack. Many of these 3rd party 
-libraries, such as StringStack/express, will require config. Each of these components will specify where they will look
-for config within the nconf component.
+libraries, such as [@StringStack/express](https://www.npmjs.com/package/@stringstack/express), will require config. Each 
+of these components will specify where they will look for config within the nconf component. See the documentation of 
+each 3rd party component to know how to configure them.
 
-See the documentation of each 3rd party component to know how to configure them.
+A good 3rd party component will put its config in a namespace that makes sense and has a low collision probability.
+
+Here is a simple example of how you might set the defaults for an app that uses 
+[@StringStack/express](https://www.npmjs.com/package/@stringstack/express).
+
+```javascript
+
+// file located at lib/setup/config.js
+ 
+'use strict';
+
+class SetupConfig {
+
+    constructor( deps ) {
+    
+      // ensure this config setup inits before config inits
+      this._nconf = deps.inject( 'config' );
+    
+    }
+
+    init( done ) {
+    
+        // pulls in full config from a file.
+        this._nconf.file( process.cwd() + '/config.json');
+  
+        // sets all stringstack component defaults
+        this._nconf.defaults( {
+            stringstack: {
+                express: { // if we were going to use @stringstack/express with this application, this is its config
+                    http: {
+                     enabled: true
+                    },
+                    https: {
+                     enabled: true
+                    }
+                }
+            }
+        } );
+        
+        done();
+    
+    }
+
+}
+
+module.exports = SetupConfig;
+
+```
+
+Then your app file might look like this.
+
+```javascript
+'use strict';
+
+const StringStack = require( 'stringstack' );
+
+let stringstack = new StringStack();
+
+const App = stringstack.createApp( {
+    rootComponents: [
+        './lib/setup/config'
+    ]
+} );
+
+module.exports = App;
+```
+
+
+```javascript
+
+```
 
 ## Logging
 
