@@ -35,12 +35,12 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
         * [inject() Method](#inject-method)
 * [Bootstrap Yo' App](#bootstrap-yo-app)
     * [Create App and App Class Interfaces](#create-app-and-app-class-interfaces)
-        * [Core.createApp()](#corecreateapp)
+        * [StringStack.createApp()](#stringstackcreateapp)
         * [App Class](#app-class)
 * [StringStack Life Cycle](#stringstack-life-cycle)
     * [Cheat Sheet](#cheat-sheet)
 * [Path Resolution](#path-resolution)
-* [Configuration](#configuration)
+* [Configuration Setup](#configuration-setup)
     * [Configuration for 3rd Party Components](#configuration-for-3rd-party-components)
 * [Logging](#logging)
     * [Logging from Custom Components](#logging-from-custom-components)
@@ -56,7 +56,77 @@ npm install stringstack --save
 This will also install ExpressJS for you. See the version log at the end of this document to see which version of 
 ExpressJS is provided with each version of StringStack/express. 
 
-# Configuration
+## Configuration Setup
+
+To configure your custom components as well as 3rd party components you need to boot strap a root component that 
+populates the values in the ```config``` component. This config setup component should inject config, then load all
+values into the nconf instance returned by ```deps.inject( 'config' )```. Here is an example config setup component.
+
+3rd party components should tell you where to put there config. In this example we have enabled both HTTP and HTTPS 
+listeners for the component [@StringStack/express](https://www.npmjs.com/package/@stringstack/express).
+
+```javascript
+
+// file located at lib/setup/config.js
+ 
+'use strict';
+
+class SetupConfig {
+
+    constructor( deps ) {
+    
+      // ensure this config setup inits before config inits
+      this._nconf = deps.inject( 'config' );
+    
+    }
+
+    init( done ) {
+    
+        // pulls in config from a file.
+        // technically this is a synchronous load, and could go in the constructor, but a stronger pattern is to load
+        // config in init and at least pretend it is asynchronous. 
+        this._nconf.file( process.cwd() + '/config.json');
+
+        this._nconf.defaults( {
+            stringstack: {
+                express: { // if we were going to use @stringstack/express with this application, this is its config
+                    http: {
+                     enabled: true
+                    },
+                    https: {
+                     enabled: true
+                    }
+                }
+            }
+        } );
+        
+        done();
+    
+    }
+
+}
+
+module.exports = SetupConfig;
+
+```
+
+Then your app file might look like this.
+
+```javascript
+'use strict';
+
+const StringStack = require( 'stringstack' );
+
+let stringstack = new StringStack();
+
+const App = stringstack.createApp( {
+    rootComponents: [
+        './lib/setup/config'
+    ]
+} );
+
+module.exports = App;
+```
 
 ## Component Interfaces
 
@@ -124,7 +194,7 @@ later.
 
 The two methods, `init()` and `dinit()` are each passed a callback function. Again, you can name this callback function
 whatever you like, but the first and only parameter passed in is the done callback. If your component passes an instance
-of `Error` class to `done()`, then all initialization will stop and core will exit with an error.
+of `Error` class to `done()`, then all initialization will stop and StringStack will exit with an error.
 
 #### Form 2 - Object Literal
 
@@ -317,7 +387,7 @@ can initialize all the HTTP routes before any HTTP ports are opened.
 Ok, so you build a bunch of components, now what? This... This is what....
 
 1. Create an instance of StringStack.
-1. call core.createApp() to create an App class that starts and stops your application.
+1. call stringstack.createApp() to create an App class that starts and stops your application.
 1. Instantiate App class.
 1. Call app.init().
 1. When its time to shutdown, call app.dinit().
@@ -327,11 +397,11 @@ system.
 
 ```javascript
  
-const Core = require( 'stringstack' );
+const StringStack = require( 'stringstack' );
  
-let core = new Core();
+let stringstack = new StringStack();
  
-const App = core.createApp( {
+const App = stringstack.createApp( {
   rootComponents: [
     './lib/some-component-a',
     './lib/some-component-b',
@@ -380,9 +450,9 @@ onSomeProcessShutdownSignal( dinit );
 
 ### Create App and App Class Interfaces
 
-Here we describe the interfaces for the Core.createApp() method and the App class returned from createApp().
+Here we describe the interfaces for the StringStack.createApp() method and the App class returned from createApp().
 
-#### Core.createApp()
+#### StringStack.createApp()
 
 The job of createApp() is to create an App class that controls your code. The method accepts a single object parameter
 of the form:
@@ -469,14 +539,14 @@ Before we go on, a note on ES6 classes vs object literals. When we use the term 
 variety. Note that object literal component format is now deprecated. See the section 
 [Form 2 - Object Literal](#form-2---object-literal) for explanation on the rational for removing that form. 
 
-When StringStack core is instantiated, you pass in the root components. These are the top of your dependency graph. 
+When StringStack is instantiated, you pass in the root components. These are the top of your dependency graph. 
 
 Here we are passing in two root components. The order matters. StringStack instantiates components in depth-first order.
 
 That is, say you have a dependency tree like this:
 
 ```
-Core
+StringStack
 |_ A
 |  |_C
 |_ B
@@ -498,7 +568,7 @@ a database. Furthermore, the database may be utilized at multiple levels in a de
 example.
 
 ```
-Core
+StringStack
 |_ A
 |  |_C
 |    |_DATABASE
@@ -538,7 +608,7 @@ d-initialization is just the reverse of initialization order.
 Finally, a component may include as many dependencies as is needed. Take for example this dependency graph.
 
 ```
-Core
+StringStack
 |_ A
    |_ B
    |  |_D
@@ -560,7 +630,7 @@ D-initialize: A, B, D, E, C, F, G
 
 This is a short hand reminder of everything you need to know for the order things occur in StringStack.
 
-1. Your code calls: ```let App = core.createApp();```
+1. Your code calls: ```let App = stringstack.createApp();```
 1. Your code instantiates App: ```let app = new App( env );```
     1. StringStack: sets up the global log handler and puts it in the global dependency container as ```logger```.
     1. StringStack: App creates an empty instance of nconf and puts it in the global dependency container as 
@@ -720,7 +790,7 @@ as meta or an object that can be serialized with JSON.stringify().
 
 ```javascript
  
-const Core = require('stringstack');
+const StringStack = require('stringstack');
 const Winston = require( 'winston' );
 
 // log to stdout/stderr
@@ -746,9 +816,9 @@ let winstonLogger = function ( level, component, message, meta ) {
                  
 }
 
-let core = new Core();
+let stringstack = new StringStack();
 
-const App = core.createApp( {
+const App = stringstack.createApp( {
   log: winstonLogger,
   rootComponents: [
     // ...
@@ -884,9 +954,9 @@ If you have a valid environment name set for testing, then you can access testCo
 
 ```javascript
 
-    let core = new Core();
+    let stringstack = new StringStack();
 
-    let App = core.createApp( {
+    let App = stringstack.createApp( {
         rootComponents: [
           './lib/configSetup', // you may or may not need this, depending on how you want to test componentToTest
           './lib/componentToTest'
@@ -940,11 +1010,11 @@ With Daemonix you can run your entire StringStack application like this.
 
 ```javascript
  
-const Core = require('stringstack');
+const StringStack = require('stringstack');
  
-let core = new Core();
+let stringstack = new StringStack();
  
-const App = core.createApp( {
+const App = stringstack.createApp( {
   rootComponents: [
      './lib/setup.config',
      './lib/custom-component-a',
