@@ -1,7 +1,7 @@
 {
   "name": "stringstack",
   "description": "StringStack Application Dependency Injection and Orchestration",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/StringStack/stringstack-core.git"
