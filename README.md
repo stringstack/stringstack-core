@@ -24,6 +24,7 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
 ## Table of Contents
 
 * [Installation](#installation)
+* [Hello, World!](#hello-world)
 * [Component Interfaces](#component-interfaces)
     * [Choosing a Form](#choosing-a-form)
         * [Form 1 - ES6 Class](#form-1---es6-class)
@@ -52,6 +53,19 @@ scale systems for multiple Fortune 500 and Fortune 100 companies.
 ```bash
 npm install stringstack --save
 ```
+
+## Hello, World!
+
+If you want to see a complete REST API stack built on StringStack + Deamonix, then check out this 
+[Hello, World!](https://github.com/stringstack/stringstack-hello-world).
+
+This Hello, World! is a very basic, but complete REST API pattern. You can clone this repo, add your own routes and it 
+would run efficiently in large-scale production environments.
+
+The Hello, World! example includes logging, config, and express, all loaded into StringStack and process managed by
+Daemonix. Just check out the README.md file for documentation on what all the files do, and how to use the code. 
+
+It will take maybe 10-20 minutes, and it will change your Node.js life. 
 
 ## Component Interfaces
 
