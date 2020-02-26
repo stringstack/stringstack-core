@@ -1,20 +1,20 @@
 {
-  "name": "@stringstack/core",
-  "description": "StringStack Core",
-  "version": "0.3.2",
+  "name": "stringstack",
+  "description": "StringStack Application Dependency Injection and Orchestration",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/StringStack/stringstack-core.git"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "./node_modules/mocha/bin/mocha --exit --bail test/general.test.js"
   },
   "dependencies": {
-    "async": "2.6.3",
+    "async": "3.1.0",
     "nconf": "0.10.0"
   },
   "devDependencies": {
-    "mocha": "5.2.0",
+    "mocha": "6.2.2",
     "ncp": "2.0.0"
   },
   "keywords": [
@@ -29,12 +29,16 @@
   },
   "homepage": "https://github.com/StringStack/stringstack-core#readme",
   "main": "index.js",
-  "directories": {
-    "lib": "lib",
-    "test": "test"
-  },
   "author": "Anthony Hildoer <anthony@bluerival.com>",
   "engines": {
     "node": ">=8.0.0"
-  }
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE",
+    "package-lock.json",
+    "package.json",
+    "README.md"
+  ]
 }
