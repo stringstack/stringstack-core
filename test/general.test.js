@@ -7,6 +7,10 @@ const Core = require( '../index' );
 const ncp = require( 'ncp' ).ncp;
 const Path = require( 'path' );
 
+function removeSourceRootPath( str ) {
+  return str.replace( new RegExp( process.cwd(), 'g' ), '' );
+}
+
 // should be used in all tests after init/dinit methods to ensure all modules are initialized/dinitialized properly
 let checkInitialized = function ( app, initialized ) {
   return ( done ) => {
@@ -1031,7 +1035,7 @@ describe( 'general', function () {
       }
 
       assert.ok( exception, 'failed to throw exception' );
-      assert.equal( exception.message, 'dependency cycle created' );
+      assert.equal( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/err/class.load-self to /test/lib/err/class.load-self' );
 
 
     } );
@@ -1057,8 +1061,34 @@ describe( 'general', function () {
       }
 
       assert.ok( exception, 'failed to throw exception' );
-      assert.equal( exception.message, 'dependency cycle created' );
+      assert.equal( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/cycle.err/class.d to /test/lib/cycle.err/class.b' );
 
+
+    } );
+
+    it( 'should throw an error if a.get(b) and b.inject(a)', function () {
+
+      let core = new Core();
+
+      let App = core.createApp( {
+        rootComponents: [
+          './test/lib/cycle.err.part-2/class.a'
+        ]
+      } );
+
+      let exception = null;
+      try {
+
+        // eslint-disable-next-line no-new
+        new App( 'test' );
+
+      } catch ( e ) {
+        exception = e;
+      }
+
+      assert.ok( exception, 'failed to throw exception' );
+      assert.equal( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/cycle.err.part-2/class.b to /test/lib/cycle.err.part-2/class.a' );
+      assert.equal( removeSourceRootPath( exception.stack ), "Error: dependency cycle created from /test/lib/cycle.err.part-2/class.b to /test/lib/cycle.err.part-2/class.a\n    at Loader._setComponentDependency (/lib/loader.js:308:13)\n    at Loader._load (/lib/loader.js:210:10)\n    at Loader.inject (/lib/loader.js:178:17)\n    at Container.inject (/lib/container.js:42:25)\n    at new TestCycleB (/test/lib/cycle.err.part-2/class.b.js:10:20)\n    at Loader._load (/lib/loader.js:226:18)\n    at Loader.get (/lib/loader.js:182:17)\n    at Container.get (/lib/container.js:29:25)\n    at new TestCycleA (/test/lib/cycle.err.part-2/class.a.js:10:20)\n    at Loader._load (/lib/loader.js:226:18)\n    at Loader.get (/lib/loader.js:182:17)\n    at /lib/core.js:72:24\n    at Array.forEach (<anonymous>)\n    at new App (/lib/core.js:71:24)\n    at Context.<anonymous> (/test/general.test.js:1083:9)\n    at callFn (/node_modules/mocha/lib/runnable.js:387:21)\n    at Test.Runnable.run (/node_modules/mocha/lib/runnable.js:379:7)\n    at Runner.runTest (/node_modules/mocha/lib/runner.js:535:10)\n    at /node_modules/mocha/lib/runner.js:653:12\n    at next (/node_modules/mocha/lib/runner.js:447:14)\n    at /node_modules/mocha/lib/runner.js:457:7\n    at next (/node_modules/mocha/lib/runner.js:362:14)\n    at /node_modules/mocha/lib/runner.js:420:7\n    at done (/node_modules/mocha/lib/runnable.js:334:5)\n    at callFn (/node_modules/mocha/lib/runnable.js:410:7)\n    at Hook.Runnable.run (/node_modules/mocha/lib/runnable.js:379:7)\n    at next (/node_modules/mocha/lib/runner.js:384:10)\n    at Immediate._onImmediate (/node_modules/mocha/lib/runner.js:425:5)\n    at processImmediate (internal/timers.js:456:21)" );
 
     } );
 
