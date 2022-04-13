@@ -10,7 +10,7 @@
     "test": "./node_modules/mocha/bin/mocha --exit --bail test/general.test.js"
   },
   "dependencies": {
-    "async": "3.1.0",
+    "async": "3.2.2",
     "nconf": "0.10.0"
   },
   "devDependencies": {
