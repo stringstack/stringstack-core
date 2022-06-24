@@ -23,7 +23,7 @@ let checkInitialized = function ( app, initialized ) {
           return;
         }
 
-        assert.equal(
+        assert.strictEqual(
           app._loader._components[path].initialized,
           initialized,
           'module path ' + path + ' should be ' + ( initialized ? 'initialized' : 'dinitialized' )
@@ -108,7 +108,7 @@ describe( 'general', function () {
 
           try {
 
-            assert.equal( getComponentManually( app, 'env' ), 'test', 'environment should be test' );
+            assert.strictEqual( getComponentManually( app, 'env' ), 'test', 'environment should be test' );
 
           } catch ( e ) {
             return done( e );
@@ -865,7 +865,7 @@ describe( 'general', function () {
 
         try {
 
-          assert.equal( err.message,
+          assert.strictEqual( err.message,
             'already initialized',
             'error message does not match' );
 
@@ -901,7 +901,7 @@ describe( 'general', function () {
 
         try {
 
-          assert.equal( err.message,
+          assert.strictEqual( err.message,
             'you must access your dependencies in your constructor or load() method only',
             'error message does not match' );
 
@@ -944,8 +944,8 @@ describe( 'general', function () {
 
         try {
 
-          assert.equal( initGood, true, 'should have passed init without error' );
-          assert.equal( err.message,
+          assert.strictEqual( initGood, true, 'should have passed init without error' );
+          assert.strictEqual( err.message,
             'you must access your dependencies in your constructor or load() method only',
             'error message does not match' );
 
@@ -998,9 +998,9 @@ describe( 'general', function () {
 
         try {
 
-          assert.equal( initGood, true, 'should have passed init without error' );
-          assert.equal( dinitGood, true, 'should not have gotten to dinit' );
-          assert.equal( err.message,
+          assert.strictEqual( initGood, true, 'should have passed init without error' );
+          assert.strictEqual( dinitGood, true, 'should not have gotten to dinit' );
+          assert.strictEqual( err.message,
             'you must access your dependencies in your constructor or load() method only',
             'error message does not match' );
 
@@ -1035,7 +1035,7 @@ describe( 'general', function () {
       }
 
       assert.ok( exception, 'failed to throw exception' );
-      assert.equal( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/err/class.load-self to /test/lib/err/class.load-self' );
+      assert.strictEqual( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/err/class.load-self to /test/lib/err/class.load-self' );
 
 
     } );
@@ -1061,7 +1061,7 @@ describe( 'general', function () {
       }
 
       assert.ok( exception, 'failed to throw exception' );
-      assert.equal( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/cycle.err/class.d to /test/lib/cycle.err/class.b' );
+      assert.strictEqual( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/cycle.err/class.d to /test/lib/cycle.err/class.b' );
 
 
     } );
@@ -1087,8 +1087,7 @@ describe( 'general', function () {
       }
 
       assert.ok( exception, 'failed to throw exception' );
-      assert.equal( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/cycle.err.part-2/class.b to /test/lib/cycle.err.part-2/class.a' );
-      assert.equal( removeSourceRootPath( exception.stack ), "Error: dependency cycle created from /test/lib/cycle.err.part-2/class.b to /test/lib/cycle.err.part-2/class.a\n    at Loader._setComponentDependency (/lib/loader.js:308:13)\n    at Loader._load (/lib/loader.js:210:10)\n    at Loader.inject (/lib/loader.js:178:17)\n    at Container.inject (/lib/container.js:42:25)\n    at new TestCycleB (/test/lib/cycle.err.part-2/class.b.js:10:20)\n    at Loader._load (/lib/loader.js:226:18)\n    at Loader.get (/lib/loader.js:182:17)\n    at Container.get (/lib/container.js:29:25)\n    at new TestCycleA (/test/lib/cycle.err.part-2/class.a.js:10:20)\n    at Loader._load (/lib/loader.js:226:18)\n    at Loader.get (/lib/loader.js:182:17)\n    at /lib/core.js:72:24\n    at Array.forEach (<anonymous>)\n    at new App (/lib/core.js:71:24)\n    at Context.<anonymous> (/test/general.test.js:1083:9)\n    at callFn (/node_modules/mocha/lib/runnable.js:387:21)\n    at Test.Runnable.run (/node_modules/mocha/lib/runnable.js:379:7)\n    at Runner.runTest (/node_modules/mocha/lib/runner.js:535:10)\n    at /node_modules/mocha/lib/runner.js:653:12\n    at next (/node_modules/mocha/lib/runner.js:447:14)\n    at /node_modules/mocha/lib/runner.js:457:7\n    at next (/node_modules/mocha/lib/runner.js:362:14)\n    at /node_modules/mocha/lib/runner.js:420:7\n    at done (/node_modules/mocha/lib/runnable.js:334:5)\n    at callFn (/node_modules/mocha/lib/runnable.js:410:7)\n    at Hook.Runnable.run (/node_modules/mocha/lib/runnable.js:379:7)\n    at next (/node_modules/mocha/lib/runner.js:384:10)\n    at Immediate._onImmediate (/node_modules/mocha/lib/runner.js:425:5)\n    at processImmediate (internal/timers.js:456:21)" );
+      assert.strictEqual( removeSourceRootPath( exception.message ), 'dependency cycle created from /test/lib/cycle.err.part-2/class.b to /test/lib/cycle.err.part-2/class.a' );
 
     } );
 
